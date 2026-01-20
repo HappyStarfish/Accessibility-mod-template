@@ -1,0 +1,229 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace NAMESPACE
+{
+    /// <summary>
+    /// Handler for FEATURENAME accessibility.
+    ///
+    /// BEST PRACTICES for Handlers:
+    /// 1. One handler per feature/screen (InventoryHandler, ShopHandler, DialogHandler)
+    /// 2. Keep handlers focused - if it does too much, split it
+    /// 3. Use static IsXXXOpen() method so Main can check without instantiating
+    /// 4. Track state changes with _lastXXX fields to avoid duplicate announcements
+    /// 5. Use ScreenReader.Announce() for all announcements
+    /// </summary>
+    public class FEATURENAMEHandler
+    {
+        #region Fields
+
+        // Cache expensive lookups
+        private GameObject _cachedPanel;
+
+        // Navigation state
+        private int _currentIndex;
+
+        // Track state to detect changes
+        private bool _wasOpen;
+        private string _lastAnnouncedText;
+
+        #endregion
+
+        #region Static Detection
+
+        /// <summary>
+        /// Checks if the FEATURENAME UI is currently open.
+        /// This is static so Main.cs can call it without creating an instance.
+        /// </summary>
+        public static bool IsFEATURENAMEOpen()
+        {
+            // Option 1: Check GameObject
+            // var panel = GameObject.Find("FEATURENAMEPanel");
+            // return panel != null && panel.activeInHierarchy;
+
+            // Option 2: Check game singleton
+            // return SomeGameClass.Instance?.IsOpen ?? false;
+
+            // Option 3: Check screen mode
+            // return MainScreen.instance?.mode == 5;
+
+            return false; // TODO: Implementieren
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Called every frame by Main.Update().
+        /// Handles state tracking and input processing.
+        /// </summary>
+        public void Update()
+        {
+            // Track open/close state
+            bool isOpen = IsFEATURENAMEOpen();
+
+            if (isOpen && !_wasOpen)
+            {
+                OnOpen();
+            }
+            else if (!isOpen && _wasOpen)
+            {
+                OnClose();
+            }
+
+            _wasOpen = isOpen;
+
+            // Only process input when open
+            if (!isOpen) return;
+
+            ProcessInput();
+        }
+
+        /// <summary>
+        /// Public method for F-key announcements (called from Main).
+        /// </summary>
+        public void AnnounceStatus()
+        {
+            // Announce current state when user presses F-key
+            AnnounceCurrentItem();
+        }
+
+        #endregion
+
+        #region State Changes
+
+        private void OnOpen()
+        {
+            DebugLogger.LogState("FEATURENAME opened");
+            _currentIndex = 0;
+            _cachedPanel = null; // Reset cache
+            ScreenReader.Announce("FEATURENAME geöffnet");
+            AnnounceCurrentItem();
+        }
+
+        private void OnClose()
+        {
+            DebugLogger.LogState("FEATURENAME closed");
+            _cachedPanel = null;
+            _lastAnnouncedText = null;
+            ScreenReader.Announce("FEATURENAME geschlossen");
+        }
+
+        #endregion
+
+        #region Input Processing
+
+        private void ProcessInput()
+        {
+            // Navigation handled by Main.cs via Tab
+            // Only add feature-specific keys here
+
+            // Example: Space to repeat current item
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                AnnounceCurrentItem();
+            }
+
+            // Example: Number keys for quick actions
+            // if (Input.GetKeyDown(KeyCode.Alpha1))
+            // {
+            //     PerformAction(0);
+            // }
+        }
+
+        #endregion
+
+        #region Navigation
+
+        /// <summary>
+        /// Called by Main when user presses Tab/Shift+Tab.
+        /// </summary>
+        public void Navigate(int direction)
+        {
+            int total = GetItemCount();
+            DebugLogger.Log(LogCategory.Handler, "FEATURENAMEHandler",
+                $"Navigate({direction}), total={total}, current={_currentIndex}");
+
+            if (total == 0)
+            {
+                ScreenReader.Announce("Leer");
+                return;
+            }
+
+            _currentIndex += direction;
+
+            // Wrap around
+            if (_currentIndex < 0) _currentIndex = total - 1;
+            if (_currentIndex >= total) _currentIndex = 0;
+
+            AnnounceCurrentItem();
+        }
+
+        /// <summary>
+        /// Called by Main when user presses Enter.
+        /// </summary>
+        public void ActivateCurrent()
+        {
+            // TODO: Perform action for current item
+            ScreenReader.Announce("Ausgewählt");
+        }
+
+        #endregion
+
+        #region Announcements
+
+        private void AnnounceCurrentItem()
+        {
+            int total = GetItemCount();
+            if (total == 0)
+            {
+                ScreenReader.Announce("Leer");
+                return;
+            }
+
+            string itemText = GetItemText(_currentIndex);
+
+            // Avoid duplicate announcements
+            if (itemText == _lastAnnouncedText) return;
+            _lastAnnouncedText = itemText;
+
+            int position = _currentIndex + 1;
+            ScreenReader.Announce($"{position} von {total}: {itemText}");
+        }
+
+        #endregion
+
+        #region Data Access
+
+        private int GetItemCount()
+        {
+            // TODO: Return number of items
+            // Example: return InventoryManager.Instance?.Items?.Count ?? 0;
+            return 0;
+        }
+
+        private string GetItemText(int index)
+        {
+            // TODO: Return text for item at index
+            // Example:
+            // var item = InventoryManager.Instance?.Items[index];
+            // var text = item?.Name ?? "Unbekannt";
+            // DebugLogger.LogGameValue($"Item[{index}]", text);
+            // return text;
+            return "Unbekannt";
+        }
+
+        private GameObject GetPanel()
+        {
+            // Lazy-load and cache the panel
+            if (_cachedPanel == null)
+            {
+                _cachedPanel = GameObject.Find("FEATURENAMEPanel");
+            }
+            return _cachedPanel;
+        }
+
+        #endregion
+    }
+}

@@ -1,0 +1,30 @@
+# Build outputs
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+.vscode/
+
+# NuGet
+packages/
+*.nupkg
+
+# Decompiled game files (too large for git)
+decompiled/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# Temporary files
+*.tmp
+*.temp

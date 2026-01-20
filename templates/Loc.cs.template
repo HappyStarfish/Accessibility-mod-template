@@ -1,0 +1,174 @@
+using System.Collections.Generic;
+
+namespace [MODNAME]
+{
+    /// <summary>
+    /// Zentrale Lokalisierung für den Accessibility-Mod.
+    /// Erkennt Spielsprache automatisch.
+    ///
+    /// Verwendung:
+    ///   Loc.Get("key")              - String abrufen
+    ///   Loc.Get("key", arg1, arg2)  - String mit Platzhaltern {0}, {1}
+    /// </summary>
+    public static class Loc
+    {
+        #region Fields
+
+        private static bool _initialized = false;
+        private static string _currentLang = "en";
+
+        // Dictionaries für jede unterstützte Sprache
+        private static readonly Dictionary<string, string> _german = new();
+        private static readonly Dictionary<string, string> _english = new();
+        // Weitere Sprachen nach Bedarf hinzufügen:
+        // private static readonly Dictionary<string, string> _spanish = new();
+        // private static readonly Dictionary<string, string> _french = new();
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Initialisiert die Lokalisierung. Einmal beim Mod-Start aufrufen.
+        /// </summary>
+        public static void Initialize()
+        {
+            InitializeStrings();
+            RefreshLanguage();
+            _initialized = true;
+        }
+
+        /// <summary>
+        /// Aktualisiert die Sprache basierend auf Spieleinstellung.
+        /// Aufrufen wenn Spieler Sprache ändert.
+        /// </summary>
+        public static void RefreshLanguage()
+        {
+            string gameLang = GetGameLanguage();
+
+            switch (gameLang)
+            {
+                case "de":
+                    _currentLang = "de";
+                    break;
+                // Weitere Sprachen hier:
+                // case "es":
+                //     _currentLang = "es";
+                //     break;
+                default:
+                    _currentLang = "en";
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Holt einen lokalisierten String.
+        /// </summary>
+        public static string Get(string key)
+        {
+            if (!_initialized) Initialize();
+
+            var dict = GetCurrentDictionary();
+
+            // Versuche aktuelle Sprache
+            if (dict.TryGetValue(key, out string value))
+                return value;
+
+            // Fallback: Englisch
+            if (_english.TryGetValue(key, out string engValue))
+                return engValue;
+
+            // Letzter Fallback: Key selbst (hilft beim Debugging)
+            return key;
+        }
+
+        /// <summary>
+        /// Holt einen lokalisierten String mit Platzhaltern.
+        /// Nutzt {0}, {1}, {2} etc. als Platzhalter.
+        /// </summary>
+        public static string Get(string key, params object[] args)
+        {
+            string template = Get(key);
+            try
+            {
+                return string.Format(template, args);
+            }
+            catch
+            {
+                return template;
+            }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// === DIESE METHODE FÜR DEIN SPIEL ANPASSEN ===
+        /// Liest die aktuelle Spielsprache aus.
+        /// </summary>
+        private static string GetGameLanguage()
+        {
+            // TODO: An das Spiel anpassen!
+            // Suche im dekompilierten Code nach: Language, Localization, I18n, getAlias()
+
+            // UNITY BEISPIELE:
+            // return Language.getAlias();
+            // return PlayerPrefs.GetString("language", "en");
+
+            // FALLBACK (einsprachig):
+            return "en";
+        }
+
+        private static Dictionary<string, string> GetCurrentDictionary()
+        {
+            switch (_currentLang)
+            {
+                case "de": return _german;
+                // case "es": return _spanish;
+                default: return _english;
+            }
+        }
+
+        /// <summary>
+        /// Hilfsmethode: Fügt einen String in alle Sprachen ein.
+        /// Bei mehr Sprachen: Parameter erweitern!
+        /// </summary>
+        private static void Add(string key, string german, string english)
+        {
+            _german[key] = german;
+            _english[key] = english;
+        }
+
+        /// <summary>
+        /// Alle Übersetzungen hier definieren.
+        /// </summary>
+        private static void InitializeStrings()
+        {
+            // ===== ALLGEMEIN =====
+            Add("mod_loaded",
+                "[MODNAME] geladen. F1 für Hilfe.",
+                "[MODNAME] loaded. F1 for help.");
+
+            Add("help_title",
+                "Hilfe:",
+                "Help:");
+
+            // ===== MIT PLATZHALTERN =====
+            // Syntax: {0}, {1}, {2} etc.
+            Add("item_count",
+                "{0} Gegenstände",
+                "{0} items");
+
+            // ===== HANDLER-SPEZIFISCH =====
+            // Hier weitere Strings für jeden Handler hinzufügen
+            // Namenskonvention: [handler]_[aktion]
+            // Beispiele:
+            // Add("inventory_opened", "Inventar geöffnet", "Inventory opened");
+            // Add("inventory_empty", "Inventar leer", "Inventory empty");
+            // Add("shop_not_enough", "Nicht genug Münzen", "Not enough coins");
+        }
+
+        #endregion
+    }
+}

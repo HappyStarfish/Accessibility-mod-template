@@ -1,0 +1,105 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- WICHTIG: TargetFramework aus MelonLoader-Log bestimmen!
+         Runtime Type: net35 → net472 (NICHT netstandard2.0!)
+         Runtime Type: net6  → net6.0 -->
+    <TargetFramework>TARGET_FRAMEWORK</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+
+    <AssemblyName>MODNAME</AssemblyName>
+    <RootNamespace>NAMESPACE</RootNamespace>
+  </PropertyGroup>
+
+  <!-- WICHTIG: Dekompilierte Dateien vom Build ausschließen! -->
+  <ItemGroup>
+    <Compile Remove="decompiled\**" />
+    <Compile Remove="templates\**" />
+  </ItemGroup>
+
+  <!-- MelonLoader Referenzen
+       WICHTIG: Ordner muss zu Runtime Type passen (net35/ oder net6/) -->
+  <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>SPIELORDNER\MelonLoader\RUNTIME_ORDNER\MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>SPIELORDNER\MelonLoader\RUNTIME_ORDNER\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Unity Referenzen (aus dem Spiel-Managed-Ordner) -->
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>SPIELORDNER\SPIELNAME_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>SPIELORDNER\SPIELNAME_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>SPIELORDNER\SPIELNAME_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>SPIELORDNER\SPIELNAME_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>SPIELORDNER\SPIELNAME_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Spiel-Assembly -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>SPIELORDNER\SPIELNAME_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Nach Build: DLL in Mods-Ordner kopieren -->
+  <Target Name="CopyToMods" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="SPIELORDNER\Mods\" />
+    <Message Text="Copied $(TargetFileName) to Mods folder" Importance="High" />
+  </Target>
+
+</Project>
+
+<!--
+ANLEITUNG - Platzhalter ersetzen:
+
+1. TARGET_FRAMEWORK:
+   - Prüfe MelonLoader-Log für "Runtime Type:"
+   - net35 → ersetze mit: net472 (NICHT netstandard2.0!)
+   - net6  → ersetze mit: net6.0
+
+   ACHTUNG: netstandard2.0 funktioniert NICHT für Mono/net35-Spiele!
+   Der Mod wird geladen aber nicht initialisiert (keine Fehlermeldung).
+
+2. RUNTIME_ORDNER:
+   - net35 → ersetze mit: net35
+   - net6  → ersetze mit: net6
+
+3. SPIELORDNER: Der volle Pfad zum Spiel, z.B.:
+   C:\Program Files (x86)\Steam\steamapps\common\Spielname
+
+4. SPIELNAME: Name des Spiels (für den _Data Ordner), z.B.:
+   Pet Idle → Pet Idle_Data
+
+5. MODNAME und NAMESPACE: Dein Mod-Name, z.B.:
+   PetIdleAccessibility
+
+CHECKLISTE VOR BUILD:
+[ ] TargetFramework passt zu Runtime Type aus Log
+[ ] RUNTIME_ORDNER passt zu Runtime Type
+[ ] Alle SPIELORDNER ersetzt
+[ ] Alle SPIELNAME ersetzt
+[ ] decompiled und templates werden ausgeschlossen
+-->

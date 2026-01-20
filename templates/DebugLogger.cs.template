@@ -1,0 +1,129 @@
+using MelonLoader;
+
+namespace NAMESPACE
+{
+    /// <summary>
+    /// Centralized debug logging with categories.
+    /// All logging goes through here so it can be filtered and controlled.
+    ///
+    /// Usage:
+    ///   DebugLogger.Log(LogCategory.Input, "Tab pressed");
+    ///   DebugLogger.Log(LogCategory.State, "Inventory opened");
+    ///   DebugLogger.Log(LogCategory.Handler, "InventoryHandler", "Navigated to item 3");
+    ///
+    /// Categories help when reading logs:
+    ///   [SR] Screenreader output - what the user hears
+    ///   [INPUT] Key presses and input events
+    ///   [STATE] Screen/menu state changes
+    ///   [HANDLER] Handler decisions and actions
+    ///   [GAME] Values read from game (positions, stats, etc.)
+    /// </summary>
+    public static class DebugLogger
+    {
+        /// <summary>
+        /// Log a debug message with category.
+        /// Only logs when Main.DebugMode is true.
+        /// </summary>
+        /// <param name="category">The log category</param>
+        /// <param name="message">The message to log</param>
+        public static void Log(LogCategory category, string message)
+        {
+            if (!Main.DebugMode) return;
+
+            string prefix = GetPrefix(category);
+            MelonLogger.Msg($"{prefix} {message}");
+        }
+
+        /// <summary>
+        /// Log a debug message with category and source.
+        /// Useful for handler logs to identify which handler logged.
+        /// </summary>
+        /// <param name="category">The log category</param>
+        /// <param name="source">Source identifier (e.g. handler name)</param>
+        /// <param name="message">The message to log</param>
+        public static void Log(LogCategory category, string source, string message)
+        {
+            if (!Main.DebugMode) return;
+
+            string prefix = GetPrefix(category);
+            MelonLogger.Msg($"{prefix} [{source}] {message}");
+        }
+
+        /// <summary>
+        /// Log screenreader output. Called automatically by ScreenReader.Say().
+        /// </summary>
+        public static void LogScreenReader(string text)
+        {
+            if (!Main.DebugMode) return;
+
+            MelonLogger.Msg($"[SR] {text}");
+        }
+
+        /// <summary>
+        /// Log a key press event.
+        /// </summary>
+        public static void LogInput(string keyName, string action = null)
+        {
+            if (!Main.DebugMode) return;
+
+            string msg = action != null
+                ? $"{keyName} -> {action}"
+                : keyName;
+            MelonLogger.Msg($"[INPUT] {msg}");
+        }
+
+        /// <summary>
+        /// Log a state change (screen opened/closed, mode changed).
+        /// </summary>
+        public static void LogState(string description)
+        {
+            if (!Main.DebugMode) return;
+
+            MelonLogger.Msg($"[STATE] {description}");
+        }
+
+        /// <summary>
+        /// Log a game value that was read (for debugging data extraction).
+        /// </summary>
+        public static void LogGameValue(string name, object value)
+        {
+            if (!Main.DebugMode) return;
+
+            MelonLogger.Msg($"[GAME] {name} = {value}");
+        }
+
+        private static string GetPrefix(LogCategory category)
+        {
+            return category switch
+            {
+                LogCategory.ScreenReader => "[SR]",
+                LogCategory.Input => "[INPUT]",
+                LogCategory.State => "[STATE]",
+                LogCategory.Handler => "[HANDLER]",
+                LogCategory.Game => "[GAME]",
+                _ => "[DEBUG]"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Categories for debug logging.
+    /// </summary>
+    public enum LogCategory
+    {
+        /// <summary>What the screenreader announces</summary>
+        ScreenReader,
+
+        /// <summary>Key presses and input events</summary>
+        Input,
+
+        /// <summary>Screen/menu state changes</summary>
+        State,
+
+        /// <summary>Handler decisions and processing</summary>
+        Handler,
+
+        /// <summary>Values read from the game</summary>
+        Game
+    }
+}

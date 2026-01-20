@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(Move-Item \"C:\\\\Users\\\\Sonja\\\\Documents\\\\Modprojekte\\\\Mod Template\\\\docs\\\\Menu-Accessibility-Checkliste.txt\" \"C:\\\\Users\\\\Sonja\\\\Documents\\\\Modprojekte\\\\Mod Template\\\\docs\\\\menu-accessibility-checklist.md\")",
+      "Bash(echo:*)",
+      "Bash(winget install:*)",
+      "Bash(git init:*)",
+      "Bash(gh --version:*)",
+      "Bash(gh auth:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
