@@ -1,0 +1,38 @@
+# Contributing to Accessibility Mod Template
+
+## About This Project
+
+For now, this merely is a **template of a template** - a foundation for starting accessibility modding projects with Claude Code. It was created by a blind screen reader user working with Claude Code, without significant coding experience.
+
+My goal is to help newbies like myself get started with their accessibility modding projects with:
+- Strong technical foundation
+- Good coding practices from the start
+- Protection against common pitfalls
+- Clear guidance for Claude Code to follow
+
+## How You Can Help
+
+### 1. Share What Works
+**If you've used this template or started your own accessibility mod:**
+- What did you find useful?
+- What was missing or confusing?
+- What additional templates or documentation would help?
+- What prompts or instructions helped Claude Code produce better code?
+
+### 2. Technical Feedback (Especially from Programmers)
+**I'd love to receive honest feedback:**
+- Where does it show this was created without traditional coding knowledge?
+- What coding patterns should be improved?
+- What architectural decisions need reconsidering?
+- What common mistakes should the template help avoid?
+- Are the code templates following best practices?
+
+Don't hold back - constructive criticism helps make this better for everyone.
+
+### 4. Additional Templates
+- Handler patterns you've found useful
+- Utility classes that solve common problems
+
+## How to Contribute
+
+Just open an issue, make a pull request, or simply get in touch via the Audiogames forum (Plueschyoda)

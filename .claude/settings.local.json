@@ -8,7 +8,10 @@
       "Bash(git init:*)",
       "Bash(gh --version:*)",
       "Bash(gh auth:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(gh repo create:*)"
     ]
   }
 }
