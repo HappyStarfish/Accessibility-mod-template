@@ -16,7 +16,7 @@ So let's get you started...
 
 ### What You'll Need
 
-As mentioned, unfortunately you'll need at least a Claude Pro subscription and a credit card as payment method.
+As mentioned, unfortunately you'll need at least a Claude Pro subscription and a credit or debit card as payment method.
 
 After signup, tell Claude that you're interested in coding, and it will probably suggest automatically to install Claude Code on your computer.
 
@@ -68,13 +68,23 @@ Just a short version for now, I'll add more later:
 ### 1. Communicate Naturally
 
 Talk to Claude Code in a dynamic, natural way. It's surprising how flexible it is, and it can figure out pretty much any creative solution you ask it about. (And now, it did not force me to write this!)
-Also, you can and should ask Claude to clarify things you don't understand.
 
-### 2. Manage Your Token Usage
+### 2. Be curious, creative and persistent
+
+You can and should ask Claude to clarify things you don't get.
+The better you understand what it is doing and why, the better suggestions you'll be able to make, no matter your level of coding skills (or lack thereof).
+If you aren't sure how to proceed or which choice would be better, ask for advantages, disadvantages and common pitfalls.
+Also, if you feel confident enough, do question Claude's decisions, sometimes it's possible to safe yourself time (and tokens) by asking if a new feature can be built using already existing code.
+
+### 3. What to do when something won't work even after the umteenth attempt
+
+Sometimes it helps to urge Claude to check the existing source code for expected game behaviour. Maybe the dialogue popup you've been working on for hours doesn't actually exist because the game is doing something entirely different. Or maybe the combat handling class is using generic variable terms instead of the ones the game actually uses. (I did try to make Claude always check the source code, but honestly, it doesn't seem to be working that well.)
+
+### 4. Manage Your Token Usage
 
 It will quickly become important to be careful with your usage. Within a conversation, Claude Code will keep rereading everything that's been said every single time you send a new message. That's generally helpful because you want the AI to remember what you're doing, but if possible, start a new conversation whenever one topic or little feature is completed.
 
-### 3. Maintain Documentation
+### 5. Maintain Documentation
 
 Add and maintain documentation in MD files to make Claude remember things across conversations. The template setup will start doing this already. The most important file is `CLAUDE.md`—everything that's really important should go there. However, it will be read every single time you interact with Claude, so make sure it stays short and compact.
 
