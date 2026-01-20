@@ -28,3 +28,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Local working files (not for distribution)
+forum-post.txt
+*.local.*

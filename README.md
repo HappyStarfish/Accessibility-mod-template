@@ -1,9 +1,3 @@
-# Access Mod Template
-
-A structured Claude Code template for creating accessibility mods that make games playable with screen readers.
-
----
-
 # Welcome!
 
 So you've seen some impressive examples of people creating entire complex mods with the help of AI, and you've been wondering if you could do the same?
@@ -43,7 +37,7 @@ We all have those games which we've been enthusiastic about for years on end and
 
 ### Starting Your Project
 
-1. Unpack the Access Mod Template folder from this directory anywhere on your computer
+1. Unpack the Accessibility-Mod-Template folder from this directory anywhere on your computer
 2. Rename it to the game you want to modify
 3. Open your newly created folder (without a file or subfolder being selected)
 4. Open Windows PowerShell via the context menu (T or Alt+T usually works)
@@ -53,11 +47,19 @@ We all have those games which we've been enthusiastic about for years on end and
 
 **Note:** If any of you uses JAWS, could you please let me know how and to what extent the command line navigation works? Then I can add that info here.
 
-### Running the Setup
+### Getting started
 
 1. Restart the command line (i.e. close the window, open the command line again via the context menu in the same folder, and type "claude")
 2. Simply type something like "hello" or "new project"
 3. The setup process will guide you through lots of steps to get you started with the foundation of your mod development
+
+## What the general work flow will look like
+
+The first time you run the starting setup, Claude Code will prompt you to install several tools for logging, decompiling and compiling. This will take a little while.
+Then, after you've answered all the initial questions, e.g. where the game is located and what engine it is based on, Claude will propt you to decompile the game's source code, and then analyze it, getting an overview of what will need to be done to make the game accessible.
+Then the actual work begins: You can decide which features you'll want to build first. I'd recommend to start with a very basic version which just annonces something when the game is started, an to then move on to the first things you'll interact with in the game, e.g. main menu or starting screen.
+The AI will write a lot of code and test it (this is just for technical errors, not for actual functionality), then you can start the game, see what the mod does, and tell claude what is not working.
+And once the first feature is functional (or functional enough for the moment), you can continue with the next one.
 
 ## Tips and Tricks
 
@@ -65,7 +67,8 @@ Just a short version for now, I'll add more later:
 
 ### 1. Communicate Naturally
 
-Talk to Claude Code in a dynamic, natural way. It's surprising how flexible it is, and it can figure out pretty much any creative solution you ask it about. You can always ask it to clarify things.
+Talk to Claude Code in a dynamic, natural way. It's surprising how flexible it is, and it can figure out pretty much any creative solution you ask it about. (And now, it did not force me to write this!)
+Also, you can and should ask Claude to clarify things you don't understand.
 
 ### 2. Manage Your Token Usage
 
@@ -79,7 +82,7 @@ Add and maintain documentation in MD files to make Claude remember things across
 
 Have fun, and do let me know how it goes! Either here or on the Audiogames forum.
 
-The rest of this documentation is just technical stuff for GitHub.
+The rest of this page is just credits and technical stuff for GitHub.
 
 
 ## Project Structure
