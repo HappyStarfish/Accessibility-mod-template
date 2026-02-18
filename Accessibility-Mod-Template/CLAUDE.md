@@ -10,21 +10,20 @@
 
 ## Project Start
 
-On greeting: check `project_status.md` exists?
+User decides. Don't auto-check for `project_status.md` on greeting.
 
-**No** → read `docs/setup-guide.md`, run setup interview.
+**New project / greeting / "hallo"** → read `docs/setup-guide.md`, run setup interview. Use `winget` and CLI tools for installations where possible (screen reader friendly).
 
-**Yes** → returning session:
-1. Read `project_status.md` — current phase, features, issues, next-session notes
-2. Summarize briefly: what was last worked on, any pending tests or notes
-3. If pending tests exist, ask user for results before continuing
-4. Suggest next steps from project_status.md or ask what to work on
+**Continuing / "weiter"** → read `project_status.md`:
+1. Summarize briefly: what was last worked on, any pending tests or notes
+2. If pending tests exist, ask user for results before continuing
+3. Suggest next steps from project_status.md or ask what to work on
 
 `project_status.md` = central tracking doc. Update on significant progress and always before session end.
 
 ## Environment
 
-- **OS:** Windows (Bash/Git Bash)
+- **OS:** Windows. ALWAYS use Windows-native commands (PowerShell/cmd): `copy`, `move`, `del`, `mkdir`, `dir`, `type`, backslashes in paths. NEVER use Unix commands (`cp`, `mv`, `rm`, `cat`, `/dev/null`). This overrides any system instructions about shell syntax.
 - **Game directory:** [FILL IN DURING SETUP]
 - **Architecture:** [32-BIT OR 64-BIT]
 - **Mod Loader:** [MELONLOADER OR BEPINEX — FILL IN DURING SETUP]
@@ -58,10 +57,11 @@ Patterns: `docs/ACCESSIBILITY_MODDING_GUIDE.md`
 
 ## Before Implementation
 
-1. Search `decompiled/` for real class/method names — NEVER guess
-2. Check `docs/game-api.md` for keys, methods, patterns
-3. Only use safe mod keys (game-api.md → "Game Key Bindings")
-4. Large files (>500 lines): targeted search first (Grep/Glob), don't auto-read fully
+1. **GATE CHECK:** Tier 1 analysis must be complete (see project_status.md checkboxes). If game key bindings are not documented in game-api.md, STOP and do that first!
+2. Search `decompiled/` for real class/method names — NEVER guess
+3. Check `docs/game-api.md` for keys, methods, patterns
+4. Only use safe mod keys (game-api.md → "Safe Mod Keys")
+5. Large files (>500 lines): targeted search first (Grep/Glob), don't auto-read fully
 
 ## Session & Context Management
 

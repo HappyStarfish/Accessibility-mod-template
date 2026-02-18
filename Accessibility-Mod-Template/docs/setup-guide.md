@@ -103,6 +103,26 @@ For beginners: "Open source" means the game developers have published the progra
 
 ---
 
+### IMPORTANT: Limit Internet Research During Setup!
+
+After learning the game name, **do NOT research game internals online** (UI systems, game mechanics, code structure, how specific features work). A rough genre/overview understanding is fine ("it's a turn-based RPG", "it's a city builder"), but detailed analysis of game systems **MUST wait for the decompiled source code** (Phase 1).
+
+**Allowed internet research during setup:**
+- Is the game open source? (Step 2c)
+- What engine does it use? (Step 4)
+- What mod loader does the community use? (Step 4b/4e)
+- Is modding feasible for non-Unity engines? (Step 4d)
+
+**NOT allowed before decompilation:**
+- How the game's UI/menu system works
+- What classes or systems the game uses internally
+- Game architecture, state management, event systems
+- Anything that belongs in Phase 1 analysis
+
+**Why?** Internet information about game internals is unreliable — it may be outdated, wrong, or describe a different version. The decompiled source code is the only trustworthy source. Premature research wastes tokens and can lead to wrong assumptions that are hard to shake later.
+
+---
+
 ### Step 3: Installation Path
 
 Question: Where is the game installed? (e.g., `C:\Program Files (x86)\Steam\steamapps\common\GameName`)
@@ -355,6 +375,95 @@ For beginners: Different games use different "engines" (the underlying technolog
 - **Ren'Py games:** Relatively easy to mod. Scripts are often shipped as readable `.rpy` files. Accessibility mods could add TTS calls.
 - **Other Python-scripted games:** Depends on how much of the game logic is in Python and whether scripts are accessible.
 - **Our template is NOT directly applicable** (different language), but the patterns transfer.
+
+---
+
+##### Custom or Proprietary Engines
+
+**NOTE: This section describes the general investigation process when a game uses an unfamiliar, custom, or proprietary engine. The goal is to systematically assess whether accessibility modding is feasible before investing significant time.**
+
+**How to identify:** The game doesn't match any of the known engines above (no UnityPlayer.dll, no .pak files, no Godot markers, no .NET assemblies, no Java). The game may use a lesser-known open-source engine (Torque, OGRE, Irrlicht, etc.), a heavily modified version of a known engine, or something entirely custom-built.
+
+**Step 1: Identify the engine**
+
+Search systematically:
+- Web search: "[Game Name] game engine"
+- Web search: "[Game Name] what engine"
+- Web search: "[Game Name] technology" or "[Game Name] made with"
+- Check PCGamingWiki (often lists the engine)
+- Check Wikipedia article for the game
+- Check developer interviews or devblogs
+- Look at DLL files in the game directory for engine-specific names
+
+**Step 2: Check if the engine is open source**
+
+If you identified the engine name:
+- Web search: "[Engine Name] open source"
+- Web search: "[Engine Name] github"
+- Check the engine's license (MIT, GPL, proprietary?)
+
+**Important distinction:** An open-source engine does NOT mean the game is open source. The game may be a commercial product built on an open-source engine. The engine source helps understand internals, but you still can't access the game's specific source code unless the developer shares it.
+
+**Step 3: Investigate the scripting layer**
+
+This is the most critical question for accessibility modding. Search for:
+- Web search: "[Engine Name] scripting language"
+- Web search: "[Game Name] modding scripting"
+- Look in the game directory for script files (.lua, .py, .cs, .js, .gd, .sq, .nut, or engine-specific extensions)
+- Check if scripts are plain text (readable) or compiled bytecode
+
+**Key question: Can the scripting language call external DLLs (like Tolk)?**
+
+- **Yes, natively** (e.g., Lua with FFI, Python with ctypes): Screen reader integration is possible from within mods
+- **No native FFI**: Screen reader output requires either engine modification (C++ level) or workarounds (file-based, clipboard-based) — both fragile or requiring sighted help
+- **No scripting layer at all**: Falls into the "Pure C++ Games" category below
+
+**Step 4: Check for existing modding support**
+
+- Web search: "[Game Name] modding support"
+- Web search: "[Game Name] mods"
+- Check Nexus Mods, ModDB, Steam Workshop
+- Check if the developer released modding tools or documentation
+- Look for a `mods/` folder or similar in the game directory
+
+**Step 5: Assess the modding surface**
+
+If modding exists, determine what can be modified:
+- **Content only** (textures, levels, translations): Not sufficient for accessibility mods
+- **Game logic via scripts** (combat, AI, events, dialogs): Useful, but need screen reader bridge
+- **UI/GUI modification possible**: Critical for menu accessibility
+- **Plugin/DLL loading**: Best case — could load a native DLL with Tolk
+
+**Step 6: Evaluate feasibility for accessibility**
+
+Rate the situation honestly:
+
+**Feasible (proceed with caution):**
+- Game has script-level modding AND the scripting language can call native DLLs (Tolk)
+- OR: Game loads native plugins/DLLs that can hook into game events
+- Active modding community with documentation
+
+**Partially feasible (significant limitations):**
+- Script-level modding exists but no way to call Tolk from scripts
+- Workarounds possible (file-based TTS bridge, clipboard monitoring) but add latency and fragility
+- Engine is open source so Tolk integration could theoretically be added at the engine level, but this requires C++ compilation and likely sighted assistance
+- UI/game logic can be modified but screen reader output requires external tools
+
+**Not feasible (be honest with the user):**
+- No modding support and no way to inject code
+- Engine is closed-source C++ with no scripting layer
+- The only "modding" is asset replacement (textures, sounds)
+
+**When partially feasible, discuss options with the user:**
+
+> This game uses [Engine Name], which has [scripting/modding support], but there's no direct way to send text to your screen reader from within a mod. Here are the realistic options:
+>
+> 1. **Contact the developer** — Ask if they'd add screen reader support or share their engine build so we can add Tolk integration. This is the most sustainable path.
+> 2. **External bridge tool** — We write a small companion program that monitors a file or the clipboard for text from the mod and speaks it via the screen reader. This works but adds latency and complexity.
+> 3. **Engine modification** (if open source) — Add a native function to the engine's scripting language that calls Tolk. Requires C++ development and someone who can compile the engine.
+> 4. **Community help** — Check if sighted modders or developers would collaborate on the screen reader integration piece.
+
+**Our template is NOT directly applicable** for custom engines (different language, different architecture), but the accessibility patterns (modular handlers, screen reader wrapper concept, localization, state tracking) transfer conceptually to any language.
 
 ---
 
@@ -770,10 +879,10 @@ After completing setup, proceed in this order:
 
 0b. **For older Unity versions (5.x or earlier):** Read `docs/legacy-unity-modding.md` for important information about compatibility issues, alternative mod loaders, and Assembly-Patching as fallback. Keep this in mind during analysis - some patterns may need adaptation.
 
-1. **Source code analysis** (Phase 1 below) - Understand game systems
-2. **Search/analyze tutorial** (Section 1.9) - Understand mechanics, often high priority
+1. **Source code analysis** (Phase 1 below) - Tier 1 is mandatory before any coding
+2. **Search/analyze tutorial** (Section 1.10) - Understand mechanics, often high priority
 3. **Create feature plan** (Phase 1.5) - Most important features in detail, rest roughly
-4. **Fill game-api.md** - Document findings from the analysis
+4. **Fill game-api.md** - Document findings from the analysis (ongoing, but Tier 1 results MUST be in before Phase 2)
 
 ---
 
@@ -901,15 +1010,19 @@ Do NOT just use `dotnet build`! The `decompiled/` directory often contains its o
 
 ### Phase 1: Codebase Analysis (before coding)
 
+**PREREQUISITE: Decompiled source code MUST be in `decompiled/` before starting this phase!**
+
+Phase 1 works EXCLUSIVELY with the decompiled source code — not with internet research, not with guesses, not with wiki articles. If `decompiled/` is empty or doesn't exist, STOP and go back to Step 7 (Decompilation). All Grep/Glob commands in this phase target the `decompiled/` directory.
+
 Goal: Understand all accessibility-relevant systems BEFORE starting mod development.
 
 **How to approach this phase - don't try to do everything at once!**
 
 The analysis is divided into tiers:
 
-- **Tier 1 (Essential - do before ANY coding):** Steps 1.1, 1.2, 1.3 - Structure, Input, and UI. Without these, you can't build anything.
-- **Tier 2 (Do just-in-time - before implementing a specific feature):** Steps 1.4, 1.5, 1.6 - Analyze game mechanics, status systems, and events only when you're about to build a feature that needs them. For example, analyze the inventory system right before building the InventoryHandler, not months in advance.
-- **Tier 3 (When relevant):** Steps 1.7, 1.8, 1.9 - Localization, documentation, and tutorial analysis. Do these when the project is ready for them.
+- **Tier 1 (Essential - do before ANY coding):** Steps 1.1, 1.2, 1.3, 1.4, 1.5 - Structure, Input, UI, State Management decision, and Localization (if multilingual). Without these, you can't build anything.
+- **Tier 2 (Do just-in-time - before implementing a specific feature):** Steps 1.6, 1.7, 1.8 - Analyze game mechanics, status systems, and events only when you're about to build a feature that needs them. For example, analyze the inventory system right before building the InventoryHandler, not months in advance.
+- **Tier 3 (When relevant):** Steps 1.9, 1.10, 1.11 - Documentation, tutorial analysis. Do these when the project is ready for them.
 
 This just-in-time approach prevents information overload and means you always analyze with a specific goal in mind.
 
@@ -954,6 +1067,13 @@ Grep pattern: class.*InputManager
 ```
 
 **Result:** Create list of which keys are NOT used by the game → safe mod keys.
+
+**MANDATORY OUTPUT — do this NOW, not later:**
+1. Write ALL found key bindings to `docs/game-api.md` section "Game Key Bindings"
+2. Write the safe mod keys list to `docs/game-api.md` section "Safe Mod Keys"
+3. Update `project_status.md` — check off "Input system" items
+
+**Do NOT proceed to 1.3 until both sections are written in game-api.md!** This is the single most common source of bugs (mod keys conflicting with game controls) and the step most often skipped.
 
 #### 1.3 UI System (Tier 1 - Essential, CRITICAL for Accessibility Mods!)
 
@@ -1024,7 +1144,69 @@ After this step, you should know:
 3. Which base classes exist and how they relate
 4. Whether you need ReflectionHelper (if many private fields)
 
-#### 1.4 Game Mechanics (Tier 2 - Analyze before implementing related features)
+#### 1.4 State Management Decision (Tier 1 - Essential)
+
+Based on the results of 1.2 (Input) and 1.3 (UI), assess:
+
+**How many handlers will share the same keys?**
+
+Count the screens/features from the UI analysis where the same keys (especially arrow keys, Enter, Escape) need to do different things. Examples:
+- Arrow keys: menu navigation vs. world map movement vs. inventory browsing
+- Enter: confirm menu item vs. interact with object vs. advance dialog
+- Escape: close inventory vs. close shop vs. open pause menu
+
+**Decision:**
+- **3+ handlers sharing keys** → Use `AccessStateManager` (create from `templates/AccessStateManager.cs.template` in Phase 2)
+- **1-2 handlers** → Simple boolean flags are enough (see `state-management-guide.md`)
+
+**Document the decision** in `project_status.md` under "Architecture Decisions" with the reasoning.
+
+#### 1.5 Localization System (Tier 1 - If multilingual)
+
+**Skip this step if the mod will only support one language.** Loc.cs still gets created in Phase 2 (all strings in one place is always good), but you don't need to analyze the game's language system.
+
+**If the mod will support multiple languages (decided in Step 8):**
+
+The game's language detection must be understood BEFORE building Loc.cs, so the mod can auto-detect which language to use.
+
+```
+Grep pattern: Locali
+Grep pattern: Language
+Grep pattern: Translate
+Grep pattern: GetString
+Grep pattern: currentLanguage
+Grep pattern: getAlias
+```
+
+**What to find:**
+- How does the game store/detect its current language?
+- Is there a singleton or static property for the current language? (e.g., `LocalizationManager.CurrentLanguage`)
+- What format are the language codes? (e.g., "en", "de", "English", "German")
+- Where are the game's translation files? (for reusing game terms like item names)
+
+**Document in game-api.md** section "Localization": the class/property for current language and the language code format.
+
+See `docs/localization-guide.md` for complete instructions on building multilingual Loc.cs.
+
+---
+
+### TIER 1 COMPLETION GATE
+
+**STOP! Before proceeding to Tier 2 or Phase 1.5, verify ALL of these are done:**
+
+1. `docs/game-api.md` has a complete "Game Key Bindings" section with ALL keys the game uses
+2. `docs/game-api.md` has a "Safe Mod Keys" section listing keys the mod can safely use
+3. `docs/game-api.md` has UI base classes and text access patterns documented
+4. `project_status.md` has all Tier 1 checkboxes checked
+5. `project_status.md` "Game Key Bindings (Original)" section is filled in
+6. State management decision documented in `project_status.md` "Architecture Decisions"
+7. If multilingual: game's language detection documented in `docs/game-api.md`
+
+**If any of these are missing, go back and do them now.** Every single mod bug from key conflicts could have been prevented by completing this gate properly.
+
+---
+
+#### 1.6 Game Mechanics (Tier 2 - Analyze before implementing related features)
 
 **Player class:**
 ```
@@ -1054,7 +1236,7 @@ Grep pattern: IInteractable
 - Crafting: `class.*Craft`, `class.*Recipe`
 - Resources: `class.*Currency`, `Gold`, `Coins`
 
-#### 1.5 Status and Feedback (Tier 2 - Analyze before implementing status announcements)
+#### 1.7 Status and Feedback (Tier 2 - Analyze before implementing status announcements)
 
 **Player status:**
 ```
@@ -1072,7 +1254,7 @@ Grep pattern: Toast
 Grep pattern: Popup
 ```
 
-#### 1.6 Event System (Tier 2 - Analyze before implementing Harmony patches)
+#### 1.8 Event System (Tier 2 - Analyze before implementing Harmony patches)
 
 **Find events:**
 ```
@@ -1092,16 +1274,7 @@ Grep pattern: OnHide
 Grep pattern: OnSelect
 ```
 
-#### 1.7 Localization (Tier 3 - When adding multilingual support)
-
-```
-Grep pattern: Locali
-Grep pattern: Language
-Grep pattern: Translate
-Grep pattern: GetString
-```
-
-#### 1.8 Document Results (Tier 3 - Ongoing, update after each analysis)
+#### 1.9 Document Results (Ongoing - update after each analysis)
 
 After analysis, `docs/game-api.md` should contain:
 1. Overview - Game description, engine version
@@ -1121,7 +1294,7 @@ After analysis, `docs/game-api.md` should contain:
 **Why detailed UI documentation matters:**
 Every menu feature will need to read text from UI elements. If you document the access pattern once, you (and Claude Code) can reuse it everywhere without re-analyzing each time.
 
-#### 1.9 Search and Analyze Tutorial (Tier 3 - When planning tutorial accessibility)
+#### 1.10 Search and Analyze Tutorial (Tier 3 - When planning tutorial accessibility)
 
 **Why the tutorial is important:**
 - Tutorials explain game mechanics step by step - ideal for understanding what needs to be made accessible
@@ -1222,13 +1395,18 @@ This order is just a suggestion. Depending on the game, it may make sense to pri
 
 **Note:** The plan may and will change. Some features prove to be easier or harder than expected.
 
+**If AccessStateManager was decided in Step 1.4:** Use the feature plan to define the State enum entries. Each feature that needs exclusive input gets one enum value.
+
 ### Phase 2: Basic Framework
+
+**PREREQUISITE: Tier 1 Completion Gate MUST be passed!** (See above)
 
 1. Create C# project with mod loader references (MelonLoader or BepInEx — see `technical-reference.md` for both)
 2. Integrate Tolk for screen reader output (ScreenReader.cs)
-3. Create localization system (Loc.cs) - this is part of the basic framework, NOT a later addition
-4. Create basic mod that announces `Loc.Get("mod_loaded")` at startup
-5. Test if basic framework works
+3. Create localization system (Loc.cs) — this is part of the basic framework, NOT a later addition. If multilingual: use the game language detection analyzed in Step 1.5.
+4. If AccessStateManager was decided in Step 1.4: Create from `templates/AccessStateManager.cs.template`
+5. Create basic mod that announces `Loc.Get("mod_loaded")` at startup
+6. Test if basic framework works
 
 #### Build-Test Workflow
 

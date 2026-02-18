@@ -37,15 +37,39 @@
 
 ## Codebase Analysis Progress
 
-- [ ] Tier 1: Structure overview (namespaces, singletons)
-- [ ] Tier 1: Input system (all key bindings documented)
-- [ ] Tier 1: UI system (base classes, text access patterns)
-- [ ] Tier 2: Game mechanics (analyzed as needed per feature)
-- [ ] Tier 2: Status/feedback systems
-- [ ] Tier 2: Event system / Harmony patch points
-- [ ] Tier 3: Localization system
-- [ ] Tier 3: Tutorial analysis
-- [ ] Results documented in `docs/game-api.md`
+### GATE: Tier 1 MUST be complete before Phase 2 (Framework)!
+
+- [ ] 1.1 Structure overview (namespaces, singletons) → documented in game-api.md
+- [ ] 1.2 Input system — ALL game key bindings documented in game-api.md "Game Key Bindings"
+- [ ] 1.2 Input system — Safe mod keys identified and listed in game-api.md "Safe Mod Keys"
+- [ ] 1.3 UI system (base classes, text access patterns, Reflection needed?)
+- [ ] 1.4 State management decision → documented in "Architecture Decisions" below
+- [ ] 1.5 Localization: game's language system analyzed (only if multilingual)
+
+### GATE: Relevant Tier 2 items MUST be done before implementing each feature!
+
+- [ ] 1.6 Game mechanics (analyzed as needed per feature)
+- [ ] 1.7 Status/feedback systems
+- [ ] 1.8 Event system / Harmony patch points
+- [ ] 1.9 Results documented in `docs/game-api.md`
+- [ ] 1.10 Tutorial analysis (when relevant)
+
+## Game Key Bindings (Original)
+
+<!-- CRITICAL: Fill this during Tier 1 analysis! Every key the game uses.
+Without this list, mod keys WILL conflict with game controls. -->
+
+- (not yet documented — MUST be done before Phase 2)
+
+<!-- Example:
+- WASD / Arrow keys: Movement
+- E: Interact
+- I: Inventory
+- Escape: Pause menu
+- Space: Jump
+- Tab: (not used by game — safe for mod)
+- F1-F12: (not used by game — safe for mod)
+-->
 
 ## Implemented Features
 

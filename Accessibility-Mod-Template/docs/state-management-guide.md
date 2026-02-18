@@ -73,7 +73,9 @@ public class ModMain
 
 A central `AccessStateManager` controls which handler is currently active.
 
-### Basic Implementation
+**Template available:** Use `templates/AccessStateManager.cs.template` as starting point. It includes Context tracking, events, ForceReset, IsInputBlocked, delayed announcements, and an Escape handling pattern via Harmony patch. The template is based on proven production code.
+
+### Basic Implementation (simplified — see template for full version)
 
 ```csharp
 public static class AccessStateManager

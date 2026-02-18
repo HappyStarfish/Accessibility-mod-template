@@ -338,6 +338,8 @@ if (Input.GetKeyDown(KeyCode.F2))
 
 **Rule of thumb:** One handler per screen/feature. Split when a handler exceeds 200-300 lines.
 
+**For 3+ handlers sharing keys (Enter, Escape, arrows):** Use `AccessStateManager` to coordinate which handler is active. See `templates/AccessStateManager.cs.template` for the full implementation with Context tracking, events, and Escape handling. See `docs/state-management-guide.md` for details.
+
 ### State Change Detection
 
 Only announce on actual changes - not every frame:
@@ -368,18 +370,60 @@ public class NavigationHandler
 }
 ```
 
-### Performance Tips
+### Performance: Per-Frame Polling (Update Loops)
 
-Mods should not slow down the game. Follow these patterns:
+A common question: Is it okay to check things every frame? **Yes — as long as you're careful about what you do per frame.**
 
-**Caching:** Don't search for objects every frame.
+Unity's `Update()` runs every frame (typically 60+ times per second). The game itself does far more expensive work per frame (rendering, physics, AI) than anything our mod checks. A few lightweight comparisons per frame are completely negligible.
+
+#### What costs virtually nothing per frame
+
+These operations are so cheap that running them every frame is perfectly fine:
+
+- `Input.GetKeyDown()` — this is exactly how Unity expects input to be handled
+- Comparing a bool, int, or float (`currentHealth != _lastHealth`)
+- Null checks (`if (panel == null)`)
+- Checking a cached reference's property (`_panel.activeInHierarchy`)
+
+Even 10+ handlers doing these kinds of checks simultaneously are unmeasurable compared to what the game does per frame.
+
+#### What should NOT happen every frame
+
+These operations are expensive and should only run when a change is detected or on a timer:
+
+- `GameObject.Find()` or `FindObjectOfType()` — searches the entire scene hierarchy
+- Reflection calls (`GetField()`, `GetValue()`) — slow method lookup and invocation
+- String building/concatenation — allocates memory, creates garbage collection pressure
+- `ScreenReader.Say()` / Tolk output — a screen reader can't process 60 messages per second anyway
+- `GetComponentsInChildren()` — traverses the hierarchy every call
+
+#### The correct pattern: Check per frame, act only on change
+
 ```csharp
-// BAD: Searches every frame
+private float _lastHealth;
+
+void Update()
+{
+    // Cheap: one float comparison per frame
+    float currentHealth = player.health;
+    if (currentHealth != _lastHealth)
+    {
+        // Expensive work only when something actually changed
+        _lastHealth = currentHealth;
+        ScreenReader.Say(Loc.Get("health_changed", currentHealth));
+    }
+}
+```
+
+#### Caching: Search once, reuse forever
+
+```csharp
+// BAD: Searches the scene every frame
 void Update() {
     var panel = GameObject.Find("InventoryPanel"); // Slow!
 }
 
-// GOOD: Cache the reference
+// GOOD: Cache the reference, only search again if lost
 private GameObject _cachedPanel;
 void Update() {
     if (_cachedPanel == null)
@@ -387,24 +431,40 @@ void Update() {
 }
 ```
 
-**Frame-Limiting:** Don't check expensive operations every frame.
+#### Throttling: For moderately expensive checks
+
+When you need to do something more expensive than a simple comparison (e.g., iterating a list of items to detect changes), but there are no events to hook into:
+
 ```csharp
 private float _lastCheck;
-private const float CHECK_INTERVAL = 0.1f; // 10 times per second
+private const float CHECK_INTERVAL = 0.1f; // 10 times per second is plenty
 
 void Update() {
     if (Time.time - _lastCheck < CHECK_INTERVAL)
         return;
     _lastCheck = Time.time;
 
-    // Expensive checks here
+    // Moderately expensive checks here (list iteration, multiple property reads)
 }
 ```
 
-**When frame-checks ARE necessary:**
-- Player position tracking during fast movement
-- Quick animations/states that must not be missed
-- Input handling (Unity does this frame-based anyway)
+10 times per second is fast enough that the user won't notice any delay, but reduces work by 80-85% compared to every-frame checking.
+
+#### When per-frame checks are necessary
+
+- **Input handling** — `GetKeyDown` must be checked every frame or key presses are missed
+- **State change detection without events** — when the game doesn't fire events for something (e.g., no OnHealthChanged event), polling is the only option
+- **UI focus tracking** — when the game doesn't fire selection events, you must check which element is highlighted each frame
+
+#### When to use Harmony patches instead of polling
+
+If the game has clear methods that are called when things happen, hook them with Harmony instead of polling:
+
+- `OnMenuOpen()`, `OnMenuClose()` — patch these instead of checking `isOpen` every frame
+- `OnItemSelected()`, `OnSelectionChanged()` — patch instead of tracking selection index
+- `TakeDamage()`, `Heal()` — patch instead of comparing health values
+
+**Rule of thumb:** Use Harmony patches when the game has hookable methods. Use per-frame polling when it doesn't. Both are legitimate — the game's architecture determines which is appropriate.
 
 **Note:** The examples use Unity API. For other engines, apply the same principles with equivalent APIs.
 

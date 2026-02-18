@@ -1,0 +1,212 @@
+using System;
+using UnityEngine;
+
+namespace NAMESPACE
+{
+    /// <summary>
+    /// Central state manager for accessibility handlers.
+    /// Solves the core problem: the same keys (arrows, Enter, Escape) need to do
+    /// different things depending on what's currently active.
+    ///
+    /// Examples:
+    /// - Arrow keys: navigate a menu OR walk on the world map
+    /// - Enter: confirm a menu selection OR interact with an object
+    /// - Escape: close the inventory OR open the pause menu
+    ///
+    /// Only one handler is active at a time. When a handler activates,
+    /// the previous one is automatically deactivated.
+    ///
+    /// Usage:
+    /// - Call TryEnter() when a handler becomes active
+    /// - Call Exit() when it deactivates
+    /// - Call SetContext() when switching major game sections (title vs game)
+    /// - Use ForceReset() for global close (scene changes, etc.)
+    ///
+    /// When to use this:
+    /// - 3+ handlers that share the same keys
+    /// - Multiple game sections where the same keys behave differently
+    /// For simpler mods (1-2 handlers), boolean flags suffice.
+    /// See docs/state-management-guide.md for details.
+    /// </summary>
+    public static class AccessStateManager
+    {
+        /// <summary>
+        /// Available accessibility states/modes.
+        /// Add one entry per handler/feature that needs exclusive input.
+        /// </summary>
+        public enum State
+        {
+            None,           // No handler active - default state
+
+            // Add your states here. Examples:
+            // MainMenu,        // Main menu navigation
+            // Settings,        // Settings menu
+            // MapNavigation,   // Arrow key map/world navigation
+            // Inventory,       // Inventory screen
+            // Dialog,          // Dialog system
+            // Shop,            // Shop/trade screen
+            // Help,            // F1 help overlay
+        }
+
+        /// <summary>
+        /// Context where the mod is operating.
+        /// Used to reset state when switching between major game sections.
+        /// Not every game needs this — remove if your game has only one context.
+        /// </summary>
+        public enum Context
+        {
+            Unknown,
+            TitleScreen,
+            Game,
+            // Add more if your game has distinct sections (e.g., Tavern, Lobby)
+        }
+
+        /// <summary>
+        /// Currently active state.
+        /// </summary>
+        public static State Current { get; private set; } = State.None;
+
+        /// <summary>
+        /// Current context.
+        /// </summary>
+        public static Context CurrentContext { get; private set; } = Context.Unknown;
+
+        /// <summary>
+        /// Event fired when state changes. Parameters: (oldState, newState)
+        /// Handlers use this to clear caches and refresh data on deactivation,
+        /// or to re-scan data on activation.
+        /// </summary>
+        public static event Action<State, State> OnStateChanged;
+
+        /// <summary>
+        /// Event fired when context changes. Parameters: (oldContext, newContext)
+        /// </summary>
+        public static event Action<Context, Context> OnContextChanged;
+
+        /// <summary>
+        /// Set the current context. Resets state when context changes.
+        /// Call this from Main when detecting section changes
+        /// (e.g., in OnSceneWasLoaded or by checking game singletons).
+        /// </summary>
+        public static void SetContext(Context context)
+        {
+            if (CurrentContext == context) return;
+
+            var oldContext = CurrentContext;
+
+            // Reset state when context changes
+            if (Current != State.None)
+            {
+                DebugLogger.Log(LogCategory.State, "AccessState",
+                    $"Context change {oldContext} -> {context}, resetting {Current}");
+                ForceReset();
+            }
+
+            CurrentContext = context;
+            DebugLogger.Log(LogCategory.State, "AccessState", $"Context: {context}");
+            OnContextChanged?.Invoke(oldContext, context);
+        }
+
+        /// <summary>
+        /// Try to enter a new state. Automatically exits the previous state if one is active.
+        /// </summary>
+        /// <returns>true if state was entered successfully</returns>
+        public static bool TryEnter(State state)
+        {
+            if (state == State.None)
+            {
+                DebugLogger.Log(LogCategory.State, "AccessState",
+                    "Warning: Use Exit() instead of TryEnter(None)");
+                return false;
+            }
+
+            if (Current == state)
+            {
+                return true; // Already in this state
+            }
+
+            // Auto-exit previous state if one is active
+            if (Current != State.None)
+            {
+                DebugLogger.Log(LogCategory.State, "AccessState",
+                    $"Auto-exiting {Current} for {state}");
+                var previousState = Current;
+                Current = State.None;
+                OnStateChanged?.Invoke(previousState, State.None);
+            }
+
+            var oldState = Current;
+            Current = state;
+            DebugLogger.Log(LogCategory.State, "AccessState", $"Entered {state}");
+            OnStateChanged?.Invoke(oldState, state);
+            return true;
+        }
+
+        /// <summary>
+        /// Exit from a state. Only exits if currently in that state.
+        /// </summary>
+        public static void Exit(State state)
+        {
+            if (Current != state) return;
+
+            var oldState = Current;
+            Current = State.None;
+            DebugLogger.Log(LogCategory.State, "AccessState", $"Exited {state}");
+            OnStateChanged?.Invoke(oldState, State.None);
+        }
+
+        /// <summary>
+        /// Force exit from any state. Use for scene/context changes
+        /// or any situation where all handlers should deactivate.
+        /// </summary>
+        public static void ForceReset()
+        {
+            if (Current != State.None)
+            {
+                var oldState = Current;
+                Current = State.None;
+                DebugLogger.Log(LogCategory.State, "AccessState",
+                    $"Force reset from {oldState}");
+                OnStateChanged?.Invoke(oldState, State.None);
+            }
+        }
+
+        /// <summary>
+        /// Check if we can enter a state without actually entering.
+        /// </summary>
+        public static bool CanEnter(State state)
+        {
+            return Current == State.None || Current == state;
+        }
+
+        /// <summary>
+        /// Check if currently in a specific state.
+        /// </summary>
+        public static bool IsIn(State state)
+        {
+            return Current == state;
+        }
+
+        /// <summary>
+        /// Check if input should be blocked because a dialog/overlay is open.
+        /// Use this in handlers before processing navigation input.
+        ///
+        /// TODO: Adapt to your game's overlay/dialog system.
+        /// </summary>
+        public static bool IsInputBlocked()
+        {
+            // Example (adapt to your game):
+            // try
+            // {
+            //     if (DialogManager.Instance != null && DialogManager.Instance.IsOpen)
+            //         return true;
+            // }
+            // catch
+            // {
+            //     // Manager might not exist in all contexts
+            // }
+
+            return false;
+        }
+    }
+}
