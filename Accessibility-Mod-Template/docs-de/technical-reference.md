@@ -324,6 +324,16 @@ public class DamagePatch
 
 ## Tolk (Screenreader)
 
+### Benötigte DLLs im Spielordner
+
+**BEIDE Dateien müssen im Spielordner liegen (wo die .exe ist):**
+- `Tolk.dll` — die Screenreader-Bridge
+- `nvdaControllerClient64.dll` (64-Bit-Spiele) oder `nvdaControllerClient32.dll` (32-Bit-Spiele) — erforderlich für NVDA
+
+Ohne nvdaControllerClient bekommen NVDA-Nutzer keine Ausgabe. JAWS funktioniert über COM (keine extra DLL).
+
+Download: https://github.com/ndarilek/tolk/releases
+
 ### DLL-Imports
 
 ```csharp

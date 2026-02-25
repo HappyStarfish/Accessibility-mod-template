@@ -78,7 +78,7 @@ namespace NAMESPACE
             }
             catch (DllNotFoundException)
             {
-                MelonLogger.Error("Tolk.dll not found! Place Tolk.dll in the game folder.");
+                MelonLogger.Error("Tolk.dll not found! Place BOTH Tolk.dll AND nvdaControllerClient64.dll (or 32-bit version) in the game folder.");
                 _available = false;
             }
             catch (Exception ex)

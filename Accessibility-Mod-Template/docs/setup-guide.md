@@ -628,11 +628,13 @@ Suggest trying the mod loader that matches the game's runtime (MelonLoader for I
 
 If Tolk DLLs are missing, explain:
 - Download: https://github.com/ndarilek/tolk/releases
+- **IMPORTANT: You need BOTH DLLs — not just Tolk.dll!**
 - For 64-bit: `Tolk.dll` + `nvdaControllerClient64.dll` from the x64 directory
 - For 32-bit: `Tolk.dll` + `nvdaControllerClient32.dll` from the x86 directory
-- Copy these DLLs to the game directory (where the .exe is located)
+- Copy BOTH DLLs to the game directory (where the .exe is located)
+- Without `nvdaControllerClient*.dll`, NVDA will get no output! (JAWS works via COM, no extra DLL needed)
 
-For beginners: Tolk is a library that can communicate with various screen readers (NVDA, JAWS, etc.). Our mod uses Tolk to send text to your screen reader.
+For beginners: Tolk is a library that can communicate with various screen readers (NVDA, JAWS, etc.). Our mod uses Tolk to send text to your screen reader. Tolk.dll is the bridge, and nvdaControllerClient*.dll is specifically needed so NVDA can receive the text.
 
 ### Step 6: .NET SDK
 

@@ -29,6 +29,16 @@ Bei Begrüßung: `project_status.md` vorhanden?
 - **Architektur:** [32-BIT ODER 64-BIT]
 - **Mod-Loader:** [MELONLOADER ODER BEPINEX — BEIM SETUP AUSFÜLLEN]
 
+## Tolk-DLLs — SETUP-ERINNERUNG (diesen Abschnitt nach Tolk-Setup löschen)
+
+Beim Einrichten von Tolk für ein Mod-Projekt IMMER BEIDE DLLs in den Spielordner kopieren:
+- `Tolk.dll` — die Screenreader-Bridge-Bibliothek
+- `nvdaControllerClient64.dll` (64-Bit) oder `nvdaControllerClient32.dll` (32-Bit) — erforderlich für NVDA
+
+Ohne die nvdaControllerClient-DLL bekommen NVDA-Nutzer KEINE Ausgabe! JAWS funktioniert über COM (keine extra DLL), aber NVDA braucht diese Datei. NIE weglassen.
+
+Lokale Kopie: `C:\Users\Sonja\Documents\Modprojekte\Meta\nvdaControllerClient64.dll`
+
 ## Kodier-Regeln
 
 - Handler-Klassen: `[Feature]Handler`

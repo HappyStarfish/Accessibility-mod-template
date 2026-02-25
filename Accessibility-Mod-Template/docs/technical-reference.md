@@ -324,6 +324,16 @@ public class DamagePatch
 
 ## Tolk (Screen Reader)
 
+### Required DLLs in Game Directory
+
+**BOTH files must be present in the game folder (where the .exe is):**
+- `Tolk.dll` — the screen reader bridge
+- `nvdaControllerClient64.dll` (64-bit games) or `nvdaControllerClient32.dll` (32-bit games) — required for NVDA
+
+Without nvdaControllerClient, NVDA users get no output. JAWS works via COM (no extra DLL).
+
+Download: https://github.com/ndarilek/tolk/releases
+
 ### DLL Imports
 
 ```csharp

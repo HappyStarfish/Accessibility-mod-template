@@ -23,17 +23,18 @@ After signup, tell Claude that you're interested in coding, and it will probably
 ### Setting Up Your Environment
 
 **Important:** Open your command line as an administrator.
+After installing Claude Code, you might need to set t up so that it works within your command line. Just follow the instructions on the Claude website, and when in doubt ask Claude itself, apparently it knows its own documentary.
 
 Additionally, you'll need to install Git Bash, a command line tool which Claude Code uses for handling certain requests. To check if Git Bash is already installed, run:
 ```
 git --version
 ```
 
-### Choosing Your Game
+### Choosing Your first Game
 
 It seems to be the easiest (or at least the most popular) choice to mod games which are running on the Unity engine because there are great modding tools available for this. Maybe start with something small. Though it's OK if you don't.
 
-We all have those games which we've been enthusiastic about for years on end and now we finally want to actually play them. In fact, the more enthusiastic you are about your game of choice, the more likely it is that you'll actually stay on track throughout weeks or maybe months of endless back and forth with the AI, fixing loads of mysterious bugs.
+We all have those games which we've been enthusiastic about for years on end and now we finally want to actually play them. In fact, the more enthusiastic you are about your game of choice, the more likely it is that you'll actually stay on track throughout weeks or maybe months of endless back and forth with the AI, fixing loads of mysterious bugs on the way.
 
 ### Starting Your Project
 
@@ -82,11 +83,13 @@ Sometimes it helps to urge Claude to check the existing source code for expected
 
 ### 4. Manage Your Token Usage
 
-It will quickly become important to be careful with your usage. Within a conversation, Claude Code will keep rereading everything that's been said every single time you send a new message. That's generally helpful because you want the AI to remember what you're doing, but if possible, start a new conversation whenever one topic or little feature is completed.
+It will quickly become important to be careful with your usage. Within a conversation, Claude Code will keep rereading everything that's been said every single time you send a new message. That's generally helpful because you want the AI to remember what you're doing, but if possible, start a new conversation (i.e. a new Claude Code session) whenever one topic or little feature is completed.
 
-### 5. Maintain Documentation
+### 5. Remind claude of important stuff, and Maintain Documentation
 
+You'll need to reiterate some things in your instructions so that they don't get lost. For example when implementing a new feature, Claude must thoroughly check the original game code so that it knows exactly how to build the accessibility features.
 Add and maintain documentation in MD files to make Claude remember things across conversations. The template setup will start doing this already. The most important file is `CLAUDE.md`—everything that's really important should go there. However, it will be read every single time you interact with Claude, so make sure it stays short and compact.
+This is especially important when exploring complex game mechanics, Claude might need that info again later on.
 
 ---
 
