@@ -18,3 +18,11 @@ Desktop.ini
 .vscode/
 *.user
 *.suo
+
+# Internal notes (not part of template)
+docs/claude-md-improvements.md
+
+# Local files
+age-of-decadence-analyse.txt
+nul
+*.zip

@@ -1434,19 +1434,72 @@ The development workflow for testing mod changes:
 
 For beginners: Think of it like editing a document and printing it. You make changes, "print" (build), then check the printout (test in game). If something is wrong, you go back and edit again.
 
-### Phase 2.5: Update CLAUDE.md (after first successful build)
+**Note:** The first build uses `dotnet build` directly. After Phase 2.5, build/deploy scripts are created — from that point on, always use the scripts.
 
-**After the first successful build (or earlier if info is known), update CLAUDE.md with project-specific values:**
+### Phase 2.5: Build/Deploy Scripts and CLAUDE.md Update (after first successful build)
+
+After the first successful manual build, create PowerShell scripts so that build and deploy are always one command away. Then update CLAUDE.md to reference these scripts.
+
+#### Step 1: Create Build/Deploy Scripts
+
+Create these scripts in the `scripts/` directory:
+
+**`scripts/Build-Mod.ps1`** — Builds the mod:
+- Runs `dotnet build [ModName].csproj`
+- Reports success/failure clearly
+- Shows the output DLL path
+
+**`scripts/Deploy-Mod.ps1`** — Builds and copies to game directory:
+- Calls `Build-Mod.ps1`
+- Copies the output DLL to the game's mod folder (`Mods/` for MelonLoader, `BepInEx/plugins/` for BepInEx)
+- Optionally copies any additional files (e.g., localization files, config files)
+- Reports what was copied and where
+
+**Script requirements:**
+- Use parameters for paths so the scripts work without hardcoded values (e.g., `-GamePath`, `-Configuration Debug/Release`)
+- Default values should match the project setup so the user can just run `.\scripts\Deploy-Mod.ps1` without arguments
+- Include error handling: if build fails, don't copy. If game directory doesn't exist, warn clearly.
+- Keep scripts simple — no over-engineering. These are convenience wrappers.
+
+**Example structure for Deploy-Mod.ps1:**
+```powershell
+param(
+    [string]$Configuration = "Debug",
+    [string]$GamePath = "C:\Path\to\Game"  # Fill in during setup
+)
+
+# Build
+& "$PSScriptRoot\Build-Mod.ps1" -Configuration $Configuration
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Build failed."
+    exit 1
+}
+
+# Copy DLL to game
+$dllPath = "bin\$Configuration\net472\ModName.dll"
+$targetDir = "$GamePath\Mods"  # Adjust for BepInEx: BepInEx\plugins
+
+Copy-Item $dllPath $targetDir -Force
+Write-Host "Deployed to $targetDir"
+```
+
+#### Step 2: Update CLAUDE.md
 
 Update the "Environment" section with:
 - Game directory path
 - Architecture (32-bit/64-bit)
 - Mod loader (MelonLoader or BepInEx)
 
-Add a new "Build" section with:
-- Build command: `dotnet build [ModName].csproj`
-- Target Framework (net472 or net6.0)
-- Output path if non-standard
+**Replace the `Build` placeholder in the Coding Rules section** with a reference to the scripts:
+
+```markdown
+## Build & Deploy
+
+- Build: `.\scripts\Build-Mod.ps1`
+- Build + copy to game: `.\scripts\Deploy-Mod.ps1`
+```
+
+**Do NOT put raw `dotnet build` commands in CLAUDE.md.** Always use the scripts — they are the single source of truth for how to build and deploy.
 
 Add any project-specific notes:
 - Engine version (e.g., Unity 2021.3)
@@ -1458,10 +1511,10 @@ Add any project-specific notes:
 
 Example addition:
 ```markdown
-## Build
+## Build & Deploy
 
-- `dotnet build GameNameAccess.csproj`
-- Output: `bin/Debug/net472/GameNameAccess.dll` → copy to `[Game]/Mods/`
+- Build: `.\scripts\Build-Mod.ps1`
+- Build + copy to game: `.\scripts\Deploy-Mod.ps1`
 
 ## Notes
 

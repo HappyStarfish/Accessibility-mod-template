@@ -279,9 +279,9 @@ private void ConfirmSelection()
 
 ---
 
-## Cleaning Up Cached Data
+## Preventing Stale Data on State Changes
 
-When a handler becomes inactive, its cached data might become stale.
+When a handler becomes inactive, any stored data becomes stale. For accessibility mods this is critical: a blind player trusts what the screen reader announces. Stale data means wrong announcements with no way for the player to notice.
 
 ### The Problem
 
@@ -291,10 +291,10 @@ When a handler becomes inactive, its cached data might become stale.
 3. NavigationHandler deactivates, but _currentObjects remains
 4. User closes overlay
 5. NavigationHandler reactivates
-6. _currentObjects still shows old data!
+6. _currentObjects still shows old data — player hears wrong info!
 ```
 
-### Solution: Clear cache on state exit
+### Solution: Clear on exit, always refresh on re-entry
 
 ```csharp
 public class NavigationHandler

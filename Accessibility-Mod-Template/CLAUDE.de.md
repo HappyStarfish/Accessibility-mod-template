@@ -37,14 +37,14 @@ Beim Einrichten von Tolk für ein Mod-Projekt IMMER BEIDE DLLs in den Spielordne
 
 Ohne die nvdaControllerClient-DLL bekommen NVDA-Nutzer KEINE Ausgabe! JAWS funktioniert über COM (keine extra DLL), aber NVDA braucht diese Datei. NIE weglassen.
 
-Lokale Kopie: `C:\Users\Sonja\Documents\Modprojekte\Meta\nvdaControllerClient64.dll`
+Lokale Kopie: `[PFAD ZUR LOKALEN KOPIE VON nvdaControllerClient64.dll EINTRAGEN]`
 
 ## Kodier-Regeln
 
 - Handler-Klassen: `[Feature]Handler`
 - Private Felder: `_camelCase`
 - Logs/Kommentare: Englisch
-- Build: `dotnet build [ModName].csproj`
+- Build & Deploy: `scripts/Build-Mod.ps1` und `scripts/Deploy-Mod.ps1` verwenden (werden beim Setup erstellt). Immer Scripts nutzen, nie rohes `dotnet build` in CLAUDE.md.
 - XML-Doku: `<summary>` auf alle öffentlichen Klassen/Methoden. Private nur wenn nicht offensichtlich. Kritisch für Entwickler-Integration.
 - Lokalisierung ab Tag eins: ALLE ScreenReader-Strings durch `Loc.Get()`. Keine Ausnahmen. `Loc.cs` = Phase-2-Grundgerüst, nicht spätere Ergänzung. Auch bei einsprachigen Mods.
 
@@ -53,7 +53,7 @@ Lokale Kopie: `C:\Users\Sonja\Documents\Modprojekte\Meta\nvdaControllerClient64.
 - **Spielbarkeit** — wie Sehende spielen; Cheats nur wenn unvermeidbar
 - **Modular** — Input, UI, Ansagen, Spielzustand trennen
 - **Wartbar** — konsistente Patterns, erweiterbar
-- **Effizient** — Objekte cachen, unnötige Arbeit vermeiden
+- **Effizient** — Objekt-*Referenzen* cachen (nicht Werte), unnötige Arbeit vermeiden. Immer Live-Daten lesen — nie still veraltete gecachte Werte anzeigen
 - **Robust** — Utility-Klassen, Edge Cases, Zustandsänderungen ansagen
 - **Spielsteuerung respektieren** — nie Spieltasten überschreiben, schnelle Tastendrücke handhaben
 - **Einreichungs-Qualität** — sauber genug für Entwickler-Integration, konsistente Formatierung, aussagekräftige Namen, keine undokumentierten Hacks
@@ -78,7 +78,7 @@ Patterns: `docs/ACCESSIBILITY_MODDING_GUIDE.md`
 - Feature fertig → neue Conversation vorschlagen um Tokens zu sparen. `project_status.md` aktualisieren.
 - ~30+ Nachrichten → an frische Conversation erinnern (KI liest alles pro Nachricht neu)
 - Vor Ende/Verabschiedung → immer `project_status.md` aktualisieren
-- Nie dekompilierten Code erneut lesen, der schon in `docs/game-api.md` dokumentiert ist
+- Zuerst `docs/game-api.md` prüfen bevor dekompilierter Code gelesen wird. Aber immer gegen den echten dekompilierten Code verifizieren, wenn etwas nicht funktioniert oder unsicher ist.
 - Nach neuer Code-Analyse → sofort in `docs/game-api.md` dokumentieren
 - Problem besteht nach 3 Versuchen → stoppen, erklären, Alternativen vorschlagen, Benutzer fragen
 
