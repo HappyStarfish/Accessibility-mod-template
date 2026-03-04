@@ -54,6 +54,17 @@ We all have those games which we've been enthusiastic about for years on end and
 2. Simply type something like "hello" or "new project"
 3. The setup process will guide you through all the steps to get you started with the foundation of your mod development
 
+## Important: Decompiled Game Code
+
+This template requires you to decompile game files in order to understand the game's APIs and build your mod. Please be aware of the following:
+
+- **Never distribute decompiled code.** Do not push it to Git repositories, do not include it in mod downloads, and do not share it publicly in any form.
+- The `decompiled/` folder is already listed in `.gitignore`. Do not remove that entry — it is there to protect you from accidentally publishing copyrighted game code.
+- When documenting findings in `game-api.md`, only record what you need: method signatures, parameter names, enums, and brief behavioral notes. Do not copy entire method bodies or large sections of decompiled source.
+- Before modding a game, check the game's or publisher's modding policy. Some explicitly allow modding, others do not.
+- In the EU and potencially other places, decompilation for interoperability purposes (such as accessibility mods) is permitted under certain conditions. However, the legal situation varies by region and is not fully settled.
+- This template does not constitute legal advice. If you are unsure about the legality of your project, do proper research before starting. Don't do anything we wouldn't do! ;)
+
 ## What the general work flow will look like
 
 The first time you run the starting setup, Claude Code will prompt you to install several tools e.g. for logging and other technical background stuff. This will take a little while.

@@ -97,5 +97,7 @@ Patterns: `docs/ACCESSIBILITY_MODDING_GUIDE.md`
 - `docs/game-api.md` — Tasten, Methoden, Patterns
 - `docs/distribution-guide.md` — Paketierung, Veröffentlichung
 - `docs/git-github-guide.md` — Git/GitHub Einstieg
-- `templates/` — Code-Vorlagen
+- `templates/melonloader/` — MelonLoader-spezifische Vorlagen
+- `templates/bepinex/` — BepInEx-spezifische Vorlagen
+- `templates/shared/` — Mod-Loader-unabhängige Vorlagen
 - `scripts/` — PowerShell-Hilfsskripte

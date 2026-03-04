@@ -1,0 +1,203 @@
+using BepInEx;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
+
+// ============================================================================
+// KRITISCH: Zugriff auf Spielcode
+// ============================================================================
+// Jeder Zugriff auf Spielklassen VOR dem vollständigen Laden crasht!
+//
+// VERBOTEN in Awake() oder früher:
+//   - Spielmanager-Singletons (GameManager.i, AudioManager.instance, etc.)
+//   - typeof(SpielKlasse) in Harmony-Attributen
+//
+// ERLAUBT erst nach Scene-Load / wenn CheckGameReady() true ist.
+//
+// Bei Crashes oder stillem Fehlschlagen:
+//   Siehe docs/technical-reference.md Abschnitt "KRITISCH: Zugriff auf Spielcode"
+// ============================================================================
+
+namespace NAMESPACE
+{
+    /// <summary>
+    /// Main mod entry point. Coordinates all handlers and processes global hotkeys.
+    ///
+    /// BEST PRACTICE: Keep this class SMALL!
+    /// - Only lifecycle methods (Awake, Update, OnDestroy)
+    /// - Only global hotkey dispatch (F1-F12, Tab, Enter)
+    /// - Only handler instantiation and update calls
+    ///
+    /// Put ALL feature logic in separate Handler classes.
+    /// This makes the code easier to maintain and test.
+    /// </summary>
+    [BepInPlugin("com.AUTOR.MODNAME", "MODNAME", "1.0.0")]
+    public class Main : BaseUnityPlugin
+    {
+        #region Fields
+
+        private bool _gameReady = false;
+
+        /// <summary>
+        /// Debug mode - when true, logs all screenreader output and detailed game state.
+        /// Toggle with F12.
+        /// </summary>
+        public static bool DebugMode = false;
+
+        /// <summary>
+        /// BepInEx logger instance, accessible from other classes via Main.Log.
+        /// </summary>
+        public static BepInEx.Logging.ManualLogSource Log { get; private set; }
+
+        // Handlers - one per feature/screen
+        // private InventoryHandler _inventoryHandler;
+        // private DialogHandler _dialogHandler;
+        // private ShopHandler _shopHandler;
+
+        #endregion
+
+        #region Lifecycle
+
+        void Awake()
+        {
+            Log = Logger;
+            ScreenReader.Initialize();
+            Loc.Initialize();
+            InitializeHandlers();
+
+            SceneManager.sceneLoaded += OnSceneLoaded;
+
+            StartCoroutine(AnnounceStartupDelayed());
+        }
+
+        private void InitializeHandlers()
+        {
+            // Create handler instances here
+            // _inventoryHandler = new InventoryHandler();
+            // _dialogHandler = new DialogHandler();
+        }
+
+        private IEnumerator AnnounceStartupDelayed()
+        {
+            // Short delay so screenreader is ready
+            yield return new WaitForSeconds(1f);
+            ScreenReader.Say(Loc.Get("mod_loaded"));
+        }
+
+        void Update()
+        {
+            // Wait for game to be ready
+            if (!CheckGameReady()) return;
+
+            // Process global hotkeys first
+            if (ProcessHotkeys()) return;
+
+            // Update all handlers
+            UpdateHandlers();
+        }
+
+        private bool CheckGameReady()
+        {
+            if (_gameReady) return true;
+
+            // Check for game singletons - adjust to your game!
+            // if (GameManager.instance != null && UIManager.instance != null)
+            // {
+            //     _gameReady = true;
+            //     Logger.LogInfo("Game ready");
+            // }
+
+            return _gameReady;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            Logger.LogInfo($"Scene loaded: {scene.name}");
+            DebugLogger.LogState($"Scene changed to: {scene.name}");
+            _gameReady = false; // Reset on scene change
+        }
+
+        void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            ScreenReader.Shutdown();
+        }
+
+        #endregion
+
+        #region Hotkeys
+
+        /// <summary>
+        /// Processes global hotkeys. Returns true if a key was handled.
+        /// Only dispatch to handlers here - don't put logic in Main!
+        /// </summary>
+        private bool ProcessHotkeys()
+        {
+            // F12 = Toggle debug mode
+            if (Input.GetKeyDown(KeyCode.F12))
+            {
+                DebugMode = !DebugMode;
+                var status = DebugMode ? "enabled" : "disabled";
+                Logger.LogInfo($"Debug mode {status}");
+                ScreenReader.Say($"Debug mode {status}");
+                return true;
+            }
+
+            // F1 = Help (always in Main)
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                DebugLogger.LogInput("F1", "Help");
+                AnnounceHelp();
+                return true;
+            }
+
+            // Other F-keys dispatch to handlers:
+            // if (Input.GetKeyDown(KeyCode.F2))
+            // {
+            //     DebugLogger.LogInput("F2", "InventoryStatus");
+            //     _inventoryHandler.AnnounceStatus();
+            //     return true;
+            // }
+
+            // Tab = Navigate
+            // if (Input.GetKeyDown(KeyCode.Tab))
+            // {
+            //     int direction = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+            //     DebugLogger.LogInput(direction > 0 ? "Tab" : "Shift+Tab", "Navigate");
+            //     _buttonNavigator.Navigate(direction);
+            //     return true;
+            // }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Handler Updates
+
+        private void UpdateHandlers()
+        {
+            // Call Update() on all handlers that need per-frame checks
+            // _dialogHandler.Update();
+            // _inventoryHandler.Update();
+        }
+
+        #endregion
+
+        #region Help
+
+        private void AnnounceHelp()
+        {
+            string help = "Key bindings: " +
+                "F1 Help. ";
+                // Add more keys as you implement them:
+                // "F2 Status. " +
+                // "Tab nächstes Element. " +
+                // "Enter aktivieren.";
+
+            ScreenReader.Say(help);
+        }
+
+        #endregion
+    }
+}

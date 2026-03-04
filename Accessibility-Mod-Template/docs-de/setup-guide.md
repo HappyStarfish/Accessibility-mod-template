@@ -495,7 +495,7 @@ Falls ja:
 - Das Sprachsystem des Spiels muss beim Dekompilieren analysiert werden
 - Suche nach: `Language`, `Localization`, `I18n`, `currentLanguage`, `getAlias()`
 - Siehe `localization-guide.md` für vollständige Anleitung
-- Nutze `templates/Loc.cs.template` als Ausgangspunkt
+- Nutze `templates/shared/Loc.cs.template` als Ausgangspunkt
 
 Falls nein:
 - Mod wird einsprachig (in der Sprache des Benutzers)

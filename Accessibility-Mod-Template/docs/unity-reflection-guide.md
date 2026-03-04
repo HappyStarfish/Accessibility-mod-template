@@ -69,7 +69,7 @@ Most Unity projects follow one of two patterns:
 
 ## The Solution: ReflectionHelper
 
-Create a central helper class (see `templates/ReflectionHelper.cs.template`):
+Create a central helper class (see `templates/shared/ReflectionHelper.cs.template`):
 
 ```csharp
 // Read a class field (e.g., TextMeshProUGUI)
@@ -237,6 +237,6 @@ This documentation saves time when implementing new features - you don't need to
 
 ## References
 
-- `templates/ReflectionHelper.cs.template` - Template for the helper class
+- `templates/shared/ReflectionHelper.cs.template` - Template for the helper class
 - `decompiled/` - Decompiled game code for reference
 - `docs/ACCESSIBILITY_MODDING_GUIDE.md` - General modding patterns

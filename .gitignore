@@ -35,3 +35,6 @@ Thumbs.db
 # Local working files (not for distribution)
 forum-post.txt
 *.local.*
+
+# Release zip archives
+*.zip

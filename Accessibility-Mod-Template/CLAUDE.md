@@ -83,9 +83,12 @@ Patterns: `docs/ACCESSIBILITY_MODDING_GUIDE.md`
 - `docs/localization-guide.md` — localization
 - `docs/menu-accessibility-checklist.md` — menu checklist
 - `docs/menu-accessibility-patterns.md` — menu patterns
+- `docs/known-issues.md` — compatibility warnings (checked during setup)
 - `docs/legacy-unity-modding.md` — Unity 5.x and older
 - `docs/game-api.md` — keys, methods, patterns
 - `docs/distribution-guide.md` — packaging, publishing
 - `docs/git-github-guide.md` — Git/GitHub intro
-- `templates/` — code templates
+- `templates/melonloader/` — MelonLoader-specific templates
+- `templates/bepinex/` — BepInEx-specific templates
+- `templates/shared/` — mod-loader-independent templates
 - `scripts/` — PowerShell helpers

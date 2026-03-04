@@ -176,6 +176,12 @@ Perform these checks and collect the results:
    - If Unity version is 2019+: Full support, no issues expected
    - See `docs/legacy-unity-modding.md` for details on older Unity versions
 
+5b. **Check Known Issues (`docs/known-issues.md`):**
+   - Read `docs/known-issues.md` and check ALL categories against the detected configuration (engine, version, mod loader)
+   - If any entry matches: **immediately warn the user** with the issue description and workaround
+   - Log any matched warnings in `project_status.md` under a "Known Issues" section
+   - If a match has no workaround, discuss alternatives with the user before continuing setup
+
 6. **Check Tolk DLLs:**
    - For 64-bit: Check if `Tolk.dll` and `nvdaControllerClient64.dll` are in game directory
    - For 32-bit: Check if `Tolk.dll` and `nvdaControllerClient32.dll` are in game directory
@@ -622,6 +628,17 @@ Suggest trying the mod loader that matches the game's runtime (MelonLoader for I
 
 **Record the chosen mod loader** in `project_status.md` — it affects the project structure, build configuration, and code templates.
 
+**Template selection based on mod loader:**
+
+Templates are organized into three directories:
+- `templates/melonloader/` — MelonLoader-specific files (Main.cs, DebugLogger.cs, ModConfig.cs, ScreenReader.cs, csproj)
+- `templates/bepinex/` — BepInEx-specific files (same set, adapted for BepInEx APIs)
+- `templates/shared/` — Mod-loader-independent files (Handler.cs, Loc.cs, AccessStateManager.cs, ReflectionHelper.cs, project_status.md, game-api.md)
+
+When creating project files later, **always use the templates matching the chosen mod loader** plus all shared templates. The key differences:
+- **MelonLoader:** `MelonMod` base class, `MelonLogger`, `MelonPreferences`, output to `Mods/`
+- **BepInEx:** `BaseUnityPlugin` base class, `ManualLogSource`, `ConfigFile`, output to `BepInEx/plugins/`
+
 ---
 
 ### Step 5: Tolk (if reported as missing during automatic check)
@@ -771,14 +788,14 @@ If the mod will support more than one language:
 - Search for: `Language`, `Localization`, `I18n`, `currentLanguage`, `getAlias()`
 - See `localization-guide.md` for complete instructions
 
-Use `templates/Loc.cs.template` as starting point (always, regardless of language count).
+Use `templates/shared/Loc.cs.template` as starting point (always, regardless of language count).
 
 ### Step 9: Set Up Project Directory
 
 After the interview:
 - **Determine mod name:** `[GameName]Access` - abbreviate if 3+ words (e.g., "PetIdleAccess", "DsaAccess" for "Das Schwarze Auge")
-- Create `project_status.md` from `templates/project_status.md.template` - fill in all collected information and check off completed setup steps. **This is the central tracking document for the entire project.** Update it at every significant milestone: features completed, bugs discovered, architecture decisions, notes for the next session.
-- Create `docs/game-api.md` from `templates/game-api.md.template` as placeholder for game discoveries
+- Create `project_status.md` from `templates/shared/project_status.md.template` - fill in all collected information and check off completed setup steps. **This is the central tracking document for the entire project.** Update it at every significant milestone: features completed, bugs discovered, architecture decisions, notes for the next session.
+- Create `docs/game-api.md` from `templates/shared/game-api.md.template` as placeholder for game discoveries
 - Enter the concrete paths in CLAUDE.md under "Environment"
 
 #### Trim CLAUDE.md after setup
@@ -1158,7 +1175,7 @@ Count the screens/features from the UI analysis where the same keys (especially 
 - Escape: close inventory vs. close shop vs. open pause menu
 
 **Decision:**
-- **3+ handlers sharing keys** → Use `AccessStateManager` (create from `templates/AccessStateManager.cs.template` in Phase 2)
+- **3+ handlers sharing keys** → Use `AccessStateManager` (create from `templates/shared/AccessStateManager.cs.template` in Phase 2)
 - **1-2 handlers** → Simple boolean flags are enough (see `state-management-guide.md`)
 
 **Document the decision** in `project_status.md` under "Architecture Decisions" with the reasoning.
@@ -1403,12 +1420,13 @@ This order is just a suggestion. Depending on the game, it may make sense to pri
 
 **PREREQUISITE: Tier 1 Completion Gate MUST be passed!** (See above)
 
-1. Create C# project with mod loader references (MelonLoader or BepInEx — see `technical-reference.md` for both)
-2. Integrate Tolk for screen reader output (ScreenReader.cs)
-3. Create localization system (Loc.cs) — this is part of the basic framework, NOT a later addition. If multilingual: use the game language detection analyzed in Step 1.5.
-4. If AccessStateManager was decided in Step 1.4: Create from `templates/AccessStateManager.cs.template`
-5. Create basic mod that announces `Loc.Get("mod_loaded")` at startup
-6. Test if basic framework works
+1. Create C# project from the **mod-loader-specific csproj template** (`templates/melonloader/csproj.template` or `templates/bepinex/csproj.template`)
+2. Create Main.cs from the matching mod-loader template (`templates/melonloader/Main.cs.template` or `templates/bepinex/Main.cs.template`)
+3. Create ScreenReader.cs, DebugLogger.cs from the matching mod-loader templates
+4. Create localization system from `templates/shared/Loc.cs.template` — this is part of the basic framework, NOT a later addition. If multilingual: use the game language detection analyzed in Step 1.5.
+5. If AccessStateManager was decided in Step 1.4: Create from `templates/shared/AccessStateManager.cs.template`
+6. Create basic mod that announces `Loc.Get("mod_loaded")` at startup
+7. Test if basic framework works
 
 #### Build-Test Workflow
 

@@ -1,0 +1,239 @@
+using BepInEx.Configuration;
+using UnityEngine;
+
+namespace NAMESPACE
+{
+    /// <summary>
+    /// Mod configuration using BepInEx ConfigFile.
+    /// Settings are automatically saved to BepInEx/config/com.AUTOR.MODNAME.cfg.
+    ///
+    /// HOW THIS WORKS:
+    /// BepInEx ConfigFile creates a config file that persists between game sessions.
+    /// Users can change settings in-game via a key combination (default: Ctrl+F11).
+    /// The settings menu is navigated with arrow keys, values changed with Left/Right.
+    ///
+    /// HOW TO INTEGRATE:
+    /// 1. Call ModConfig.Initialize(plugin.Config) in Main.Awake()
+    /// 2. Add Ctrl+F11 handling in Main.ProcessHotkeys()
+    /// 3. Call ModConfig.Update() in Main.Update() (for settings menu input)
+    /// 4. Use ModConfig.Verbosity, ModConfig.AnnounceEmpty etc. in your handlers
+    /// </summary>
+    public static class ModConfig
+    {
+        #region Config Entries
+
+        private static ConfigFile _config;
+
+        // --- Add your settings here ---
+
+        private static ConfigEntry<int> _verbosity;
+        private static ConfigEntry<bool> _announceEmptyStates;
+        // private static ConfigEntry<float> _announcementDelay;
+
+        #endregion
+
+        #region Public Accessors
+
+        /// <summary>Announcement verbosity: 0=minimal, 1=normal, 2=verbose.</summary>
+        public static int Verbosity => _verbosity.Value;
+
+        /// <summary>Whether to announce empty states ("No items", "Inventory empty").</summary>
+        public static bool AnnounceEmptyStates => _announceEmptyStates.Value;
+
+        #endregion
+
+        #region Settings Menu State
+
+        private static bool _menuOpen = false;
+        private static int _currentSettingIndex = 0;
+
+        // List of setting names for navigation
+        private static readonly string[] _settingNames = new[]
+        {
+            "Verbosity",
+            "Announce empty states",
+            // Add more as you add settings
+        };
+
+        #endregion
+
+        #region Initialization
+
+        /// <summary>
+        /// Initializes mod preferences. Call once in Awake().
+        /// Pass the plugin's Config property: ModConfig.Initialize(Config);
+        /// </summary>
+        public static void Initialize(ConfigFile config)
+        {
+            _config = config;
+
+            _verbosity = config.Bind("Accessibility",
+                "Verbosity", 1,
+                new ConfigDescription(
+                    "Announcement detail level: 0=minimal, 1=normal, 2=verbose",
+                    new AcceptableValueRange<int>(0, 2)));
+
+            _announceEmptyStates = config.Bind("Accessibility",
+                "AnnounceEmptyStates", true,
+                "Announce when lists or inventories are empty");
+
+            // Add more settings here following the same pattern
+        }
+
+        #endregion
+
+        #region Settings Menu
+
+        /// <summary>
+        /// Toggles the in-game settings menu. Call from Main when user presses Ctrl+F11.
+        /// </summary>
+        public static void ToggleMenu()
+        {
+            _menuOpen = !_menuOpen;
+
+            if (_menuOpen)
+            {
+                _currentSettingIndex = 0;
+                ScreenReader.Say("Mod settings opened");
+                AnnounceCurrentSetting();
+            }
+            else
+            {
+                _config.Save();
+                ScreenReader.Say("Mod settings closed and saved");
+            }
+        }
+
+        /// <summary>
+        /// Whether the settings menu is currently open.
+        /// When open, Main should not process other input.
+        /// </summary>
+        public static bool IsMenuOpen => _menuOpen;
+
+        /// <summary>
+        /// Processes input for the settings menu. Call from Main.Update()
+        /// when IsMenuOpen is true.
+        /// </summary>
+        public static void Update()
+        {
+            if (!_menuOpen) return;
+
+            // Navigate settings
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                _currentSettingIndex--;
+                if (_currentSettingIndex < 0)
+                    _currentSettingIndex = _settingNames.Length - 1;
+                AnnounceCurrentSetting();
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                _currentSettingIndex++;
+                if (_currentSettingIndex >= _settingNames.Length)
+                    _currentSettingIndex = 0;
+                AnnounceCurrentSetting();
+            }
+
+            // Change values
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                ChangeCurrentSetting(-1);
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                ChangeCurrentSetting(1);
+            }
+
+            // Close
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                ToggleMenu();
+            }
+        }
+
+        private static void AnnounceCurrentSetting()
+        {
+            string name = _settingNames[_currentSettingIndex];
+            string value = GetCurrentSettingValue();
+            int pos = _currentSettingIndex + 1;
+            int total = _settingNames.Length;
+
+            ScreenReader.Say($"{pos} of {total}: {name}, {value}. Left right to change.");
+        }
+
+        private static string GetCurrentSettingValue()
+        {
+            switch (_currentSettingIndex)
+            {
+                case 0: // Verbosity
+                    return _verbosity.Value switch
+                    {
+                        0 => "Minimal",
+                        1 => "Normal",
+                        2 => "Verbose",
+                        _ => _verbosity.Value.ToString()
+                    };
+
+                case 1: // AnnounceEmptyStates
+                    return _announceEmptyStates.Value ? "On" : "Off";
+
+                default:
+                    return "Unknown";
+            }
+        }
+
+        private static void ChangeCurrentSetting(int direction)
+        {
+            switch (_currentSettingIndex)
+            {
+                case 0: // Verbosity (cycle 0-2)
+                    int newVal = _verbosity.Value + direction;
+                    if (newVal < 0) newVal = 2;
+                    if (newVal > 2) newVal = 0;
+                    _verbosity.Value = newVal;
+                    break;
+
+                case 1: // AnnounceEmptyStates (toggle)
+                    _announceEmptyStates.Value = !_announceEmptyStates.Value;
+                    break;
+            }
+
+            // Announce new value
+            string name = _settingNames[_currentSettingIndex];
+            string value = GetCurrentSettingValue();
+            ScreenReader.Say($"{name}: {value}");
+        }
+
+        #endregion
+    }
+}
+
+// ============================================================================
+// INTEGRATION EXAMPLE (add to Main.cs):
+// ============================================================================
+//
+// In Awake():
+//     ModConfig.Initialize(Config);
+//
+// In ProcessHotkeys():
+//     // Ctrl+F11 = Mod Settings
+//     if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.F11))
+//     {
+//         ModConfig.ToggleMenu();
+//         return true;
+//     }
+//
+// In Update(), BEFORE other handler updates:
+//     if (ModConfig.IsMenuOpen)
+//     {
+//         ModConfig.Update();
+//         return; // Don't process other input while settings are open
+//     }
+//
+// In a handler, use settings:
+//     if (ModConfig.Verbosity >= 2)
+//         ScreenReader.SayQueued($"Item details: {item.Description}");
+//
+//     if (ModConfig.AnnounceEmptyStates)
+//         ScreenReader.Say("Inventory empty");
+// ============================================================================

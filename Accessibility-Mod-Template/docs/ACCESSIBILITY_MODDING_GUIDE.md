@@ -338,7 +338,7 @@ if (Input.GetKeyDown(KeyCode.F2))
 
 **Rule of thumb:** One handler per screen/feature. Split when a handler exceeds 200-300 lines.
 
-**For 3+ handlers sharing keys (Enter, Escape, arrows):** Use `AccessStateManager` to coordinate which handler is active. See `templates/AccessStateManager.cs.template` for the full implementation with Context tracking, events, and Escape handling. See `docs/state-management-guide.md` for details.
+**For 3+ handlers sharing keys (Enter, Escape, arrows):** Use `AccessStateManager` to coordinate which handler is active. See `templates/shared/AccessStateManager.cs.template` for the full implementation with Context tracking, events, and Escape handling. See `docs/state-management-guide.md` for details.
 
 ### State Change Detection
 
