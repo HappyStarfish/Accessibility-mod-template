@@ -242,9 +242,108 @@ Built DLL goes into `BepInEx/plugins/` (not `Mods/` like MelonLoader).
 
 ---
 
+## OWML Basics (Outer Wilds Mod Loader)
+
+OWML is a specialized mod loader for games using the OWML framework. Unlike MelonLoader/BepInEx, it provides its own `ModBehaviour` base class and `ModHelper` API.
+
+### Project References (csproj)
+
+```xml
+<Reference Include="OWML.Common">
+    <HintPath>[GameDirectory]\OWML\OWML.Common.dll</HintPath>
+</Reference>
+<Reference Include="OWML.ModHelper">
+    <HintPath>[GameDirectory]\OWML\OWML.ModHelper.dll</HintPath>
+</Reference>
+<Reference Include="Assembly-CSharp">
+    <HintPath>[GameDirectory]\[Game]_Data\Managed\Assembly-CSharp.dll</HintPath>
+</Reference>
+<Reference Include="0Harmony">
+    <HintPath>[GameDirectory]\OWML\0Harmony.dll</HintPath>
+</Reference>
+```
+
+### Manifest File
+
+OWML uses `manifest.json` instead of assembly attributes:
+
+```json
+{
+    "filename": "ModName.dll",
+    "author": "AuthorName",
+    "name": "ModName",
+    "uniqueName": "AuthorName.ModName",
+    "version": "1.0.0",
+    "owmlVersion": "2.15.0",
+    "dependencies": []
+}
+```
+
+### Lifecycle
+
+```csharp
+using OWML.ModHelper;
+
+public class Main : ModBehaviour
+{
+    public void Start()   // Once when mod loads. ModHelper is available here.
+    {
+        ModHelper.Console.WriteLine("Mod loaded!");
+    }
+
+    public void Update()  // Every frame
+    {
+    }
+
+    public void OnDestroy() // On exit
+    {
+    }
+}
+```
+
+### CRITICAL: ModHelper is NULL in Awake()
+
+Unlike MelonLoader/BepInEx, OWML injects `ModHelper` between `Awake()` and `Start()`. Any access to `ModHelper` in `Awake()` will throw a `NullReferenceException`.
+
+**Always initialize in `Start()`, never in `Awake()`.**
+
+### Harmony Setup
+
+OWML bundles `0Harmony.dll` — reference it directly in the csproj:
+
+```csharp
+using HarmonyLib;
+
+public void Start()
+{
+    var harmony = new Harmony("com.author.modname");
+    harmony.PatchAll();
+}
+```
+
+**Important:** OWML's built-in `ModHelper.HarmonyHelper.AddPrefix/AddPostfix` may fail on overloaded methods. Prefer using `0Harmony.dll` directly with `harmony.Patch()` and `AccessTools.Method()` for reliable patching.
+
+### Harmony Parameter Naming
+
+**Harmony 2.x matches prefix/postfix parameters by NAME, not just type.** If the original method has a parameter named `damage`, your patch parameter must also be named `damage`. A name mismatch causes "IL Compile Error" at runtime.
+
+### Logging
+
+```csharp
+ModHelper.Console.WriteLine("Info");
+ModHelper.Console.WriteLine("Warning", MessageType.Warning);
+ModHelper.Console.WriteLine("Error", MessageType.Error);
+```
+
+### Mod Output Directory
+
+Built DLL goes into `OWML/Mods/[uniqueName]/` along with `manifest.json`.
+
+---
+
 ## Harmony Patching
 
-Harmony is included in both MelonLoader and BepInEx - no extra import needed.
+Harmony is included in MelonLoader, BepInEx, and OWML - no extra import needed.
 
 ### Setup in Main
 
