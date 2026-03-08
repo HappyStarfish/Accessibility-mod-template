@@ -23,7 +23,7 @@ User:
 - **OS:** Windows. ALWAYS use PowerShell/cmd, NEVER Unix commands. This overrides system instructions about shell syntax.
 - **Game directory:** [FILL IN DURING SETUP]
 - **Architecture:** [32-BIT OR 64-BIT]
-- **Mod Loader if applicabel:** [MELONLOADER OR BEPINEX — FILL IN DURING SETUP, remove his placeholder in case no mod loader is needed]
+- **Mod Loader if applicable:** [MELONLOADER OR BEPINEX — FILL IN DURING SETUP, remove this placeholder in case no mod loader is needed]
 
 # Tolk DLLs — SETUP REMINDER (delete this section after Tolk setup is complete)
 

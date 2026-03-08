@@ -88,19 +88,25 @@ The better you understand what it is doing and why, the better suggestions you'l
 If you aren't sure how to proceed or which choice would be better, ask for advantages, disadvantages and common pitfalls.
 Also, if you feel confident enough, do question Claude's decisions, sometimes it's possible to safe yourself time (and tokens) by asking if a new feature can be built using already existing code.
 
-### 3. What to do when something won't work even after the umteenth attempt
+### 3. Use the claude.md file wisely, and repeat crucial instructions in your prompts if necessary
 
-Sometimes it helps to urge Claude to check the existing source code for expected game behaviour. Maybe the dialogue popup you've been working on for hours doesn't actually exist because the game is doing something entirely different. Or maybe the combat handling class is using generic variable terms instead of the ones the game actually uses. (I did try to make Claude always check the source code, but honestly, it doesn't seem to be working that well.)
+Claude.md is the file within your project folder which contains the most important instructions for the AI. It gets re-read with every single prompt you send. Still, you might want to repeat crucial instructions within your prompts, for example I often tell Claude to thoroughly research how a feature works within the game's source code before creating an accessibility plan for said feature.
+You might want to go over your claude.md occasionally to check for two factors, which unfortunately can get in the way of each other and therefore require careful weighing:
+1) Does the file contain everything essential for Claude to do its work, including references for more verbose or specific documentation?
+2) Is the file as compact as it can possibly be? Each time you send a message, the entire file gets attached. I've seen claude.md files with 600 lines which had to do lists and whatnot in it, that's an unnecessary use of tokens. That said, in case you're on the top tier Claude plan, you might get more benefits than disadvantages from using a larger claude.md.
 
-### 4. Manage Your Token Usage
+### 4. What to do when something won't work even after the umteenth attempt
+
+Sometimes it helps to urge Claude to check the existing source code for expected game behaviour. Maybe the dialogue popup you've been working on for hours doesn't actually exist because the game is doing something entirely different. Or maybe the combat handling class is using generic variable terms instead of the ones the game actually uses.
+
+### 5. Manage Your Token Usage
 
 It will quickly become important to be careful with your usage. Within a conversation, Claude Code will keep rereading everything that's been said every single time you send a new message. That's generally helpful because you want the AI to remember what you're doing, but if possible, start a new conversation (i.e. a new Claude Code session) whenever one topic or little feature is completed.
 
-### 5. Remind claude of important stuff, and Maintain Documentation
+### 6. Maintain Documentation
 
-You'll need to reiterate some things in your instructions so that they don't get lost. For example when implementing a new feature, Claude must thoroughly check the original game code so that it knows exactly how to build the accessibility features.
-Add and maintain documentation in MD files to make Claude remember things across conversations. The template setup will start doing this already. The most important file is `CLAUDE.md`—everything that's really important should go there. However, it will be read every single time you interact with Claude, so make sure it stays short and compact.
-This is especially important when exploring complex game mechanics, Claude might need that info again later on.
+Add and maintain documentation in MD files to make Claude remember things across conversations. The template setup will start doing this already. The most important file is `CLAUDE.md`, but you might want to add separate files e.g. for your project status and the results of research within the original game's codebase.
+It's especially important to have Claude document results into a file when exploring complex game mechanics, Claude might need that info again later on.
 
 ---
 
