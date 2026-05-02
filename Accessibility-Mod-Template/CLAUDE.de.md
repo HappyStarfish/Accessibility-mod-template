@@ -29,6 +29,8 @@ Bei Begrüßung: `project_status.md` vorhanden?
 - **Architektur:** [32-BIT ODER 64-BIT]
 - **Mod-Loader:** [MELONLOADER ODER BEPINEX — BEIM SETUP AUSFÜLLEN]
 
+**Hinweis:** GameMaker-Projekte verwenden keinen Mod-Loader. Sie nutzen UndertaleModTool um data.win direkt zu modifizieren. Die C#-spezifischen Kodier-Regeln (Handler-Klassen, csproj, Build/Deploy-Scripts, XML-Doku, Loc.cs) gelten nicht für GameMaker-Projekte — siehe `docs/gamemaker-modding-guide.md` für GameMaker-spezifische Patterns.
+
 ## Tolk-DLLs — SETUP-ERINNERUNG (diesen Abschnitt nach Tolk-Setup löschen)
 
 Beim Einrichten von Tolk für ein Mod-Projekt IMMER BEIDE DLLs in den Spielordner kopieren:
@@ -100,4 +102,6 @@ Patterns: `docs/ACCESSIBILITY_MODDING_GUIDE.md`
 - `templates/melonloader/` — MelonLoader-spezifische Vorlagen
 - `templates/bepinex/` — BepInEx-spezifische Vorlagen
 - `templates/shared/` — Mod-Loader-unabhängige Vorlagen
+- `templates/gamemaker/` — GameMaker-spezifische Vorlagen (Patch-Script, TolkWrapper, Game-API, Projektstatus)
+- `docs/gamemaker-modding-guide.md` — GameMaker-Modding-Anleitung (UTMT, TolkWrapper, GML-Patterns)
 - `scripts/` — PowerShell-Hilfsskripte

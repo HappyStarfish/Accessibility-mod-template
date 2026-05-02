@@ -1,0 +1,122 @@
+# Project Status: [MODNAME]
+
+## Project Info
+
+- **Game:** [GAME NAME]
+- **Engine:** GameMaker Studio [VERSION]
+- **Architecture:** [32-bit / 64-bit]
+- **Data file:** [PATH TO data.win]
+- **User experience level:** [Little/None or A Lot]
+- **User game familiarity:** [Very well / Somewhat / Not at all]
+
+## Setup Progress
+
+- [x] Experience level determined
+- [x] Game name and path confirmed
+- [x] Game familiarity assessed
+- [ ] UndertaleModTool CLI installed
+- [ ] data.win backup created
+- [ ] GML code exported (ExportAllCode.csx)
+- [ ] Strings exported (ExportAllStrings.csx)
+- [ ] TolkWrapper.dll compiled (matching game architecture)
+- [ ] Tolk.dll + nvdaControllerClient DLL in game directory
+- [ ] TolkWrapper.dll in game directory
+- [ ] Project directory set up (patch script, docs)
+- [ ] CLAUDE.md updated with project-specific values
+- [ ] Test patch applied and verified in game
+
+## Current Phase
+
+**Phase:** [Setup / Analysis / Patch Development / Testing]
+**Currently working on:** [Description of current task]
+**Blocked by:** [Any blockers, or "Nothing"]
+
+## Codebase Analysis Progress
+
+### GATE: Tier 1 MUST be complete before patch development!
+
+- [ ] 1.1 Object inventory — key objects identified and documented in game-api.md
+- [ ] 1.2 Input system — ALL game key bindings documented in game-api.md
+- [ ] 1.2 Input system — Safe mod keys identified and listed in game-api.md
+- [ ] 1.3 Menu system — menu objects, navigation variables, item access patterns
+- [ ] 1.4 Dialogue system — text display objects, text variables, speaker variables
+- [ ] 1.5 Room structure — key rooms identified (title, menu, gameplay, etc.)
+
+### GATE: Relevant Tier 2 items MUST be done before implementing each feature!
+
+- [ ] 1.6 Game mechanics (analyzed as needed per feature)
+- [ ] 1.7 Global variables catalog
+- [ ] 1.8 Script functions relevant to accessibility
+- [ ] 1.9 Results documented in `docs/game-api.md`
+
+## Game Key Bindings (Original)
+
+<!-- CRITICAL: Fill this during Tier 1 analysis! Every key the game uses.
+Without this list, mod keys WILL conflict with game controls.
+Search exported GML for keyboard_check, keyboard_check_pressed, ord("X") -->
+
+- (not yet documented — MUST be done before patch development)
+
+## Implemented Features
+
+List features with their status:
+
+- (none yet)
+
+<!-- Example:
+- **Main Menu Navigation** - DONE - Arrow keys announce items, Enter activates
+- **Dialogue Reading** - DONE - Text announced when displayed
+- **Status Announcements** - IN PROGRESS - F2 for health
+- **Investigation Mode** - PLANNED - Navigate hotspots with Tab
+-->
+
+## Pending Tests
+
+What the user should test in the next game session:
+
+- (none yet)
+
+<!-- Example:
+- Apply patch, launch game — should hear "accessibility loaded" or similar
+- Navigate main menu with arrow keys — each item should be announced
+- Start a new game — dialogue text should be read aloud
+-->
+
+## Known Issues
+
+- (none yet)
+
+## Architecture Decisions
+
+Document important decisions so future sessions understand the reasoning:
+
+- (none yet)
+
+<!-- Example:
+- Using QueueAppend exclusively (QueueFindReplace too fragile across UTMT versions)
+- Inlining tw_output calls instead of creating GML script functions (simpler, fewer code entries)
+- Tracking last announced text per-system to prevent duplicate announcements
+-->
+
+## Key Bindings (Mod)
+
+- F1: Help / repeat last announcement
+- F12: Toggle debug mode (if implemented)
+<!-- Add more as features are implemented -->
+
+## Patch Script Sections
+
+Track which sections of the .csx patch script are complete:
+
+- [ ] Extension registration (TolkWrapper)
+- [ ] Init block (globals, tw_load)
+- [ ] Menu navigation
+- [ ] Dialogue reading
+- [ ] Key press events (help, status)
+- [ ] [Additional sections per feature]
+
+## Notes for Next Session
+
+Write anything the next conversation needs to know:
+
+- (none yet)

@@ -1,0 +1,207 @@
+# [GAME NAME] - Game API Documentation
+
+## Overview
+
+- **Game:** [GAME NAME]
+- **Engine:** GameMaker Studio [VERSION] (VM / YYC)
+- **Architecture:** [32-bit / 64-bit] (check options.ini → Usex64)
+- **Developer:** [DEVELOPER NAME]
+- **Data file:** data.win ([FILE SIZE])
+- **Code entries:** [NUMBER] (from UTMT export)
+- **Strings:** [NUMBER] (from UTMT string export)
+- **Objects:** [NUMBER]
+
+---
+
+## 1. Objects & Events
+
+The main game objects and their key events. GameMaker objects have events
+(Create, Step, Draw, Key Press, etc.) — each event is a separate code entry
+in data.win with the naming pattern: `gml_Object_[name]_[event]_[subtype]`
+
+### Core Objects
+
+- `[OBJECT NAME]` — [DESCRIPTION]
+  - Create_0: [What it initializes]
+  - Step_0: [What it does each frame]
+  - Draw_0: [What it draws]
+  - Key Press events: [Which keys]
+
+### Menu Objects
+
+- `[MENU OBJECT]` — [DESCRIPTION]
+  - Navigation: [How menu items are selected]
+  - Selection variable: [e.g., menu_index, sel, cursor]
+  - Item count: [How many items / how determined]
+
+### Dialogue / Text Objects
+
+- `[DIALOGUE OBJECT]` — [DESCRIPTION]
+  - Text variable: [Where current text is stored]
+  - Speaker variable: [Where speaker name is stored]
+  - Advance trigger: [How player advances dialogue]
+
+### Persistent Objects
+
+- `[PERSISTENT OBJECT]` — [DESCRIPTION, runs across rooms]
+
+### [Additional categories as needed]
+
+---
+
+## 2. Global Variables
+
+Global variables discovered in the game code. Search exported GML for
+`global.` to find these.
+
+### Game State
+
+- `global.[VARIABLE]` — [DESCRIPTION] (found in [CODE ENTRY])
+
+### Settings
+
+- `global.[VARIABLE]` — [DESCRIPTION]
+
+### Accessibility (added by patch)
+
+- `global.a11y_enabled` — master toggle (1 = on, 0 = off)
+- `global.a11y_last_text` — last announced text (prevents repeats)
+
+---
+
+## 3. Rooms
+
+GameMaker rooms and their purposes. Search exported code for `room_goto`
+to find room transitions.
+
+- `[ROOM NAME]` — [DESCRIPTION] (e.g., title screen, main menu, gameplay)
+  - Key objects in this room: [LIST]
+  - Transitions to: [OTHER ROOMS]
+
+---
+
+## 4. Game Key Bindings (DO NOT override in mod!)
+
+**CRITICAL: These keys are used by the game. The mod must NOT repurpose them!**
+
+Search exported GML for `keyboard_check`, `keyboard_check_pressed`,
+`keyboard_check_released`, and `ord("X")` patterns.
+
+### Movement
+
+- **[KEY]**: [FUNCTION] (found in [CODE ENTRY])
+
+### Actions
+
+- **[KEY]**: [FUNCTION] (found in [CODE ENTRY])
+
+### Menu Navigation
+
+- **[KEY]**: [FUNCTION] (found in [CODE ENTRY])
+
+### Mouse
+
+- **Left click**: [FUNCTION]
+- **Right click**: [FUNCTION]
+
+---
+
+## 5. Safe Keys for Mod
+
+Keys NOT used by the game, available for accessibility features.
+
+### Reserved for Accessibility Mod
+
+- **F1**: Help / repeat last announcement
+- **F2**: Announce game status
+
+### Available
+
+- **F3-F12**: [List which are free]
+- **[Other free keys]**
+
+---
+
+## 6. Game Systems
+
+### Dialogue System
+
+- Display function: `[SCRIPT/OBJECT]`
+- Text storage: `[VARIABLE OR DATA STRUCTURE]`
+- Speaker name: `[VARIABLE]`
+- Advance: `[KEY OR METHOD]`
+- GML code example:
+  ```gml
+  // [Example of how dialogue text is accessed]
+  ```
+
+### Menu System
+
+- Menu object: `[OBJECT]`
+- Selection index: `[VARIABLE]`
+- Item text access: `[HOW TO GET ITEM TEXT]`
+- Confirm: `[KEY]`
+- Cancel: `[KEY]`
+
+### Save System
+
+- Save function: `[SCRIPT/OBJECT]`
+- Save slots: `[HOW MANY, HOW ACCESSED]`
+
+### [Additional systems as discovered]
+
+---
+
+## 7. GML Code Examples
+
+### Check if accessibility is enabled
+
+```gml
+if (variable_global_exists("a11y_enabled") && global.a11y_enabled) {
+    tw_output("text to announce", 1);
+}
+```
+
+### Announce with duplicate prevention
+
+```gml
+if (global.a11y_enabled) {
+    var _text = [GET CURRENT TEXT];
+    if (_text != global.a11y_last_text) {
+        global.a11y_last_text = _text;
+        tw_output(_text, 1);
+    }
+}
+```
+
+### Read menu item
+
+```gml
+if (global.a11y_enabled && keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down)) {
+    var _item = [GET MENU ITEM TEXT AT CURRENT INDEX];
+    tw_output(_item, 1);
+}
+```
+
+---
+
+## 8. Known Issues and Workarounds
+
+- **[ISSUE]**: [Description and solution]
+
+---
+
+## 9. Not Yet Analyzed
+
+Areas that still need investigation:
+
+- [ ] [AREA 1]
+- [ ] [AREA 2]
+- [ ] [AREA 3]
+
+---
+
+## Change History
+
+- **[DATE]**: Initial analysis
+- **[DATE]**: [What was added/changed]
