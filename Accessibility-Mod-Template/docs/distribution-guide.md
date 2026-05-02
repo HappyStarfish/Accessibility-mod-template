@@ -87,6 +87,49 @@ CONTACT
 
 ---
 
+## GameMaker Games — Distribution
+
+GameMaker accessibility patches have a different distribution model than Unity mods. There is no mod loader — the patch modifies `data.win` directly.
+
+### Release Package Structure
+
+```
+GameName-A11Y-v1.0.0.zip
+├── TolkWrapper.dll              (compiled wrapper DLL)
+├── Tolk.dll                     (screen reader bridge)
+├── nvdaControllerClient32.dll   (or 64-bit version, for NVDA)
+├── accessibility_patch.csx      (the patch script)
+├── README.txt                   (installation instructions)
+└── LICENSE.txt                  (your license)
+```
+
+**Optional additions:**
+- `patcher.exe` + dependencies — standalone GUI patcher for one-click patching (no UTMT install needed)
+- Additional screen reader DLLs for regional screen readers
+- Data files referenced by the patch (e.g., JSON lookup tables)
+
+### Installation is simpler than Unity mods
+
+Users do NOT need to install a mod loader. The steps are:
+1. Back up `data.win`
+2. Copy DLLs to the game folder
+3. Apply the patch with UTMT CLI (one command) or the GUI patcher
+4. Launch the game
+
+### Backup importance
+
+**Critical:** Unlike Unity mods (which can be removed by deleting a DLL from the Mods folder), a GameMaker patch permanently modifies `data.win`. The only way to uninstall is to restore the backup. Your README must emphasize this.
+
+### Optional GUI patcher
+
+For less technical users, you can provide a standalone patcher executable that calls UTMT CLI as a subprocess to apply the .csx script. This avoids all Roslyn-related issues. See `docs/gamemaker-modding-guide.md` section 8 for the recommended approach. The patcher ships with a bundled `utmt\` directory containing the CLI.
+
+### Handling game updates
+
+When the game updates, the developer ships a new `data.win`. The patch must be re-applied. If the game code changed significantly, the patch script may need updating (especially any `QueueFindReplace` calls). `QueueAppend` calls are more resilient to game updates.
+
+---
+
 ## Versioning
 
 Use Semantic Versioning (SemVer): **MAJOR.MINOR.PATCH**

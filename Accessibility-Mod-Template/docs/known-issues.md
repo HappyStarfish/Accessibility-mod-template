@@ -20,7 +20,15 @@ This file is checked automatically during project setup (Step 4). When the game'
 
 ## Engine-Specific Issues
 
-_(Add entries here when engine-specific compatibility problems are confirmed.)_
+### GameMaker + UndertaleModTool
+
+- **QueueFindReplace silent failure:** `QueueFindReplace` does not throw an error when the match string is not found. The patch appears to succeed but the code is not injected. This is especially problematic when the decompiled GML output differs between UTMT versions or between CLI and Roslyn-hosted execution. **Workaround:** Prefer `QueueAppend` wherever possible. When `QueueFindReplace` is necessary, verify the patched output by re-exporting the code after patching.
+- **Roslyn in-process patcher causes silent patch failures:** Building a GUI patcher that loads data.win and runs .csx scripts via Roslyn in-process can cause QueueFindReplace to silently fail — the patcher reports success but patches are not applied. This is because Roslyn's script host produces slightly different decompilation behavior than UTMT CLI's native script host. **Fix:** Use UTMT CLI as a subprocess instead of Roslyn. See `docs/gamemaker-modding-guide.md` section 8.
+- **PublishTrimmed breaks UndertaleModLib:** Only relevant if using the Roslyn in-process approach (not recommended). UndertaleModLib uses reflection heavily, and the trimmer removes code it considers unused. **Fix:** Set `<PublishTrimmed>false</PublishTrimmed>`, or switch to the CLI subprocess approach.
+- **PublishSingleFile breaks Roslyn metadata loading:** Only relevant if using the Roslyn in-process approach (not recommended). SingleFile packaging embeds assemblies inside the exe, making them invisible to Roslyn's metadata resolver. **Fix:** Set `<PublishSingleFile>false</PublishSingleFile>`, or switch to the CLI subprocess approach.
+- **Special characters in paths break UTMT CLI:** Paths containing `!`, `#`, `&`, or other special characters can cause UTMT CLI to fail, especially when run from Git Bash (where `!` triggers history expansion). **Workaround:** Copy data.win to a clean path (e.g., `C:\modwork\`) for development. Use PowerShell or cmd instead of Git Bash.
+- **char\* encoding limitation:** GameMaker's DLL extension system passes strings as `char*` (UTF-8), but Tolk expects `wchar_t*` (UTF-16). Calling Tolk directly corrupts non-ASCII characters. **Fix:** Use TolkWrapper.dll as a bridge (see `templates/gamemaker/TolkWrapper.c.template` and `docs/gamemaker-modding-guide.md`).
+- **YYC-compiled games not moddable:** Games compiled with GameMaker's YYC (native C++) compiler have no `data.win` file and cannot be modded with UTMT. Only VM-mode games are supported.
 
 ## Game-Specific Issues
 

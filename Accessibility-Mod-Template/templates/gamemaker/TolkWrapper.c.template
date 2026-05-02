@@ -1,0 +1,147 @@
+// TolkWrapper.c - Bridges GameMaker's char* strings to Tolk's wchar_t* API
+//
+// WHY THIS IS NEEDED:
+// GameMaker's DLL extension system passes char* (UTF-8) strings to external DLLs.
+// Tolk's API expects wchar_t* (UTF-16). Calling Tolk directly from GML causes
+// non-ASCII characters (Chinese, Japanese, accented letters, etc.) to corrupt
+// or crash. TolkWrapper does the MultiByteToWideChar conversion before forwarding
+// to Tolk. This is a GameMaker-specific problem — Unity mods don't have it
+// because C# is natively Unicode.
+//
+// GameMaker DLL conventions:
+// - All exported functions must be __cdecl
+// - Return types must be double (GameMaker's only numeric type)
+// - String parameters arrive as const char* (UTF-8)
+// - Boolean values are doubles: > 0.5 = true, <= 0.5 = false
+//
+// COMPILE (pick one):
+//
+//   zig cc (recommended — easy cross-compile, no Visual Studio needed):
+//     32-bit: zig cc -target x86-windows -shared -o TolkWrapper.dll TolkWrapper.c
+//     64-bit: zig cc -target x86_64-windows -shared -o TolkWrapper.dll TolkWrapper.c
+//
+//   MSVC (Visual Studio Developer Command Prompt):
+//     32-bit: cl /LD /Fe:TolkWrapper.dll TolkWrapper.c
+//     64-bit: cl /LD /Fe:TolkWrapper.dll TolkWrapper.c
+//
+//   Match the target architecture to the game's architecture.
+//   Check the game's options.ini for Usex64=True/False, or check if the .exe
+//   is PE32 (32-bit) or PE32+ (64-bit).
+//
+// Tolk is loaded dynamically via LoadLibrary/GetProcAddress rather than linked
+// at compile time. This avoids import library dependency issues and lets the
+// wrapper report a clean error if Tolk.dll is missing.
+
+#include <windows.h>
+#include <stdlib.h>
+
+// --- Tolk function pointer typedefs ---
+
+typedef void           (__cdecl *pfn_Tolk_Load)(void);
+typedef void           (__cdecl *pfn_Tolk_Unload)(void);
+typedef int            (__cdecl *pfn_Tolk_IsLoaded)(void);
+typedef int            (__cdecl *pfn_Tolk_HasSpeech)(void);
+typedef int            (__cdecl *pfn_Tolk_HasBraille)(void);
+typedef const wchar_t* (__cdecl *pfn_Tolk_DetectScreenReader)(void);
+typedef int            (__cdecl *pfn_Tolk_Output)(const wchar_t* str, int interrupt);
+typedef int            (__cdecl *pfn_Tolk_Speak)(const wchar_t* str, int interrupt);
+typedef int            (__cdecl *pfn_Tolk_Braille)(const wchar_t* str);
+typedef void           (__cdecl *pfn_Tolk_Silence)(void);
+typedef void           (__cdecl *pfn_Tolk_TrySAPI)(int trySAPI);
+
+// --- Static state ---
+
+static HMODULE g_tolkDll = NULL;
+static pfn_Tolk_Load               fn_Load = NULL;
+static pfn_Tolk_Unload             fn_Unload = NULL;
+static pfn_Tolk_IsLoaded           fn_IsLoaded = NULL;
+static pfn_Tolk_HasSpeech          fn_HasSpeech = NULL;
+static pfn_Tolk_DetectScreenReader fn_Detect = NULL;
+static pfn_Tolk_Output             fn_Output = NULL;
+static pfn_Tolk_Speak              fn_Speak = NULL;
+static pfn_Tolk_Silence            fn_Silence = NULL;
+static pfn_Tolk_TrySAPI            fn_TrySAPI = NULL;
+
+// --- Internal helpers ---
+
+// Convert UTF-8 char* to wchar_t* (caller must free the result)
+static wchar_t* utf8_to_wide(const char* str) {
+    if (!str) return NULL;
+    int len = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+    if (len <= 0) return NULL;
+    wchar_t* wstr = (wchar_t*)malloc(len * sizeof(wchar_t));
+    if (!wstr) return NULL;
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr, len);
+    return wstr;
+}
+
+// Load Tolk.dll dynamically and resolve all function pointers
+static int load_tolk(void) {
+    if (g_tolkDll) return 1;
+    g_tolkDll = LoadLibraryA("Tolk.dll");
+    if (!g_tolkDll) return 0;
+    fn_Load     = (pfn_Tolk_Load)GetProcAddress(g_tolkDll, "Tolk_Load");
+    fn_Unload   = (pfn_Tolk_Unload)GetProcAddress(g_tolkDll, "Tolk_Unload");
+    fn_IsLoaded = (pfn_Tolk_IsLoaded)GetProcAddress(g_tolkDll, "Tolk_IsLoaded");
+    fn_HasSpeech= (pfn_Tolk_HasSpeech)GetProcAddress(g_tolkDll, "Tolk_HasSpeech");
+    fn_Detect   = (pfn_Tolk_DetectScreenReader)GetProcAddress(g_tolkDll, "Tolk_DetectScreenReader");
+    fn_Output   = (pfn_Tolk_Output)GetProcAddress(g_tolkDll, "Tolk_Output");
+    fn_Speak    = (pfn_Tolk_Speak)GetProcAddress(g_tolkDll, "Tolk_Speak");
+    fn_Silence  = (pfn_Tolk_Silence)GetProcAddress(g_tolkDll, "Tolk_Silence");
+    fn_TrySAPI  = (pfn_Tolk_TrySAPI)GetProcAddress(g_tolkDll, "Tolk_TrySAPI");
+    return (fn_Load && fn_Output) ? 1 : 0;
+}
+
+// --- Exported functions for GameMaker ---
+// Return values: 1.0 = success, 0.0 = Tolk returned false,
+//               -1.0 = function not loaded, -2.0 = string conversion failed
+
+__declspec(dllexport) double __cdecl tw_load(void) {
+    if (!load_tolk()) return -1.0;
+    fn_Load();
+    return 1.0;
+}
+
+__declspec(dllexport) double __cdecl tw_try_sapi(double enable) {
+    if (!fn_TrySAPI) return -1.0;
+    fn_TrySAPI(enable > 0.5 ? 1 : 0);
+    return 1.0;
+}
+
+__declspec(dllexport) double __cdecl tw_is_loaded(void) {
+    if (!fn_IsLoaded) return -1.0;
+    return fn_IsLoaded() ? 1.0 : 0.0;
+}
+
+__declspec(dllexport) double __cdecl tw_has_speech(void) {
+    if (!fn_HasSpeech) return -1.0;
+    return fn_HasSpeech() ? 1.0 : 0.0;
+}
+
+__declspec(dllexport) double __cdecl tw_output(const char* str, double interrupt) {
+    if (!fn_Output) return -1.0;
+    wchar_t* wstr = utf8_to_wide(str);
+    if (!wstr) return -2.0;
+    int result = fn_Output(wstr, interrupt > 0.5 ? 1 : 0);
+    free(wstr);
+    return result ? 1.0 : 0.0;
+}
+
+__declspec(dllexport) double __cdecl tw_speak(const char* str, double interrupt) {
+    if (!fn_Speak) return -1.0;
+    wchar_t* wstr = utf8_to_wide(str);
+    if (!wstr) return -2.0;
+    int result = fn_Speak(wstr, interrupt > 0.5 ? 1 : 0);
+    free(wstr);
+    return result ? 1.0 : 0.0;
+}
+
+__declspec(dllexport) double __cdecl tw_silence(void) {
+    if (!fn_Silence) return -1.0;
+    fn_Silence();
+    return 1.0;
+}
+
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+    return TRUE;
+}

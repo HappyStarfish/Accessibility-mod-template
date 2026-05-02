@@ -1,0 +1,204 @@
+// ============================================================
+// [GAME NAME] Accessibility Patch
+// UndertaleModTool .csx script — modifies data.win to add
+// screen reader support via TolkWrapper extension
+// ============================================================
+//
+// Usage:
+//   GUI:  Open data.win in UTMT → Scripts → Run script → select this file
+//   CLI:  UTMT_CLI.exe load data.win -s accessibility_patch.csx -o data_patched.win
+//
+// Prerequisites:
+//   - TolkWrapper.dll compiled for the game's architecture (see TolkWrapper.c)
+//   - Tolk.dll + nvdaControllerClient DLL in the game directory
+//   - Backup of original data.win
+//
+// Pattern notes:
+//   - QueueAppend: adds GML code to the END of an existing code entry. Safe and reliable.
+//   - QueueFindReplace: replaces a specific string in a code entry. Fragile — the match
+//     string must EXACTLY match the decompiled output, including whitespace. Prefer
+//     QueueAppend where possible. QueueFindReplace fails silently if the string doesn't match.
+//   - CodeImportGroup batches all changes and applies them in one Import() call.
+//   - Extension functions: GameMaker only supports double returns and char*/double params.
+//   - GML strings in C# use doubled quotes: "" inside @"..." blocks.
+
+using System;
+using System.Linq;
+using UndertaleModLib;
+using UndertaleModLib.Models;
+using UndertaleModLib.Compiler;
+
+EnsureDataLoaded();
+
+// ============================================================
+// STEP 1: Register TolkWrapper.dll as a GameMaker extension
+// ============================================================
+//
+// This tells GameMaker that tw_load, tw_output, tw_speak, tw_silence
+// are external functions in TolkWrapper.dll. After this, GML code
+// can call them like normal functions.
+
+ScriptMessage("Step 1: Registering TolkWrapper extension...");
+
+var ext = new UndertaleExtension()
+{
+    Name = Data.Strings.MakeString("TolkWrapper"),
+    FolderName = Data.Strings.MakeString(""),
+    ClassName = Data.Strings.MakeString("")
+};
+
+var extFile = new UndertaleExtensionFile()
+{
+    Filename = Data.Strings.MakeString("TolkWrapper.dll"),
+    CleanupScript = Data.Strings.MakeString(""),
+    InitScript = Data.Strings.MakeString(""),
+    Kind = UndertaleExtensionKind.Dll
+};
+
+// Extension function IDs must be unique — use ExtensionFindLastId() to get the next safe ID.
+// Never hardcode IDs — they vary between data.win files.
+uint nextId = Data.ExtensionFindLastId();
+
+// DefineExtensionFunction parameters:
+//   (Data.Functions, Data.Strings, id, kind=1 for dll, gmlName, returnType, externalName, ...argTypes)
+// GameMaker arg types: UndertaleExtensionVarType.Double, .String
+
+// tw_load() → Double, no args — initializes Tolk
+extFile.Functions.DefineExtensionFunction(Data.Functions, Data.Strings,
+    nextId++, 1, "tw_load", UndertaleExtensionVarType.Double, "tw_load");
+
+// tw_output(string, double) → Double — speaks + braille, interrupt flag
+extFile.Functions.DefineExtensionFunction(Data.Functions, Data.Strings,
+    nextId++, 1, "tw_output", UndertaleExtensionVarType.Double, "tw_output",
+    UndertaleExtensionVarType.String, UndertaleExtensionVarType.Double);
+
+// tw_speak(string, double) → Double — speech only, interrupt flag
+extFile.Functions.DefineExtensionFunction(Data.Functions, Data.Strings,
+    nextId++, 1, "tw_speak", UndertaleExtensionVarType.Double, "tw_speak",
+    UndertaleExtensionVarType.String, UndertaleExtensionVarType.Double);
+
+// tw_silence() → Double — stops current speech
+extFile.Functions.DefineExtensionFunction(Data.Functions, Data.Strings,
+    nextId++, 1, "tw_silence", UndertaleExtensionVarType.Double, "tw_silence");
+
+ext.Files.Add(extFile);
+Data.Extensions.Add(ext);
+
+// ============================================================
+// STEP 2: Initialize accessibility globals
+// ============================================================
+//
+// Append to the game's setup/init object Create event.
+// Find the right code entry by exporting all code and searching for
+// the object that runs first (often obj_SETUP, obj_init, obj_game, etc.)
+//
+// Use: UTMT_CLI.exe load data.win -s ExportAllCode.csx
+// Then search the exported GML files for initialization patterns.
+
+ScriptMessage("Step 2: Initializing accessibility system...");
+
+var importGroup = new CodeImportGroup(Data);
+
+// TODO: Replace with the actual init code entry for your game
+// Find it by searching exported code for the main setup object's Create event
+importGroup.QueueAppend("gml_Object_[INIT_OBJECT]_Create_0", @"
+// Initialize screen reader bridge
+tw_load();
+
+// Master toggle — lets users disable accessibility features
+global.a11y_enabled = 1;
+
+// State tracking — prevents repeating the same announcement
+global.a11y_last_text = """";
+");
+
+// ============================================================
+// STEP 3: Menu navigation
+// ============================================================
+//
+// Example: announce the currently selected menu item.
+// Find the menu object by searching exported code for keyboard_check
+// or menu index variables.
+
+ScriptMessage("Step 3: Menu navigation...");
+
+// TODO: Replace with actual menu object and adapt the GML
+// importGroup.QueueAppend("gml_Object_[MENU_OBJECT]_Step_0", @"
+// if (global.a11y_enabled) {
+//     // Read the current menu item text
+//     var _text = [HOW TO GET CURRENT MENU ITEM TEXT];
+//     if (_text != global.a11y_last_text) {
+//         global.a11y_last_text = _text;
+//         tw_output(_text, 1);
+//     }
+// }
+// ");
+
+// ============================================================
+// STEP 4: Dialogue / text reading
+// ============================================================
+//
+// Example: announce dialogue text when it appears or changes.
+// Search exported code for the dialogue/text display system.
+
+ScriptMessage("Step 4: Dialogue reading...");
+
+// TODO: Replace with actual dialogue code entry
+// Two approaches:
+//
+// A) QueueAppend to the dialogue display function:
+//    Safe, adds code at the end. Works when you want to announce
+//    after the game has set up the text.
+//
+// B) QueueFindReplace to inject after a specific line:
+//    More precise placement, but fragile. The match string must
+//    EXACTLY match the decompiled output. If UTMT's decompiler
+//    output differs between versions, the match silently fails.
+//
+// importGroup.QueueAppend("gml_GlobalScript_[DIALOGUE_FUNCTION]", @"
+// if (global.a11y_enabled) {
+//     var _text = [HOW TO GET DIALOGUE TEXT];
+//     if (_text != """" && _text != global.a11y_last_text) {
+//         global.a11y_last_text = _text;
+//         tw_output(_text, 0);  // 0 = don't interrupt (queue after current speech)
+//     }
+// }
+// ");
+
+// ============================================================
+// STEP 5: Key press events
+// ============================================================
+//
+// Example: add a hotkey to repeat the last announcement.
+// Append to a persistent object's Step event or Key Press event.
+
+ScriptMessage("Step 5: Key press events...");
+
+// TODO: Replace with actual persistent object
+// importGroup.QueueAppend("gml_Object_[PERSISTENT_OBJECT]_Step_0", @"
+// if (global.a11y_enabled) {
+//     // F1 = repeat last announcement
+//     if (keyboard_check_pressed(vk_f1)) {
+//         if (global.a11y_last_text != """") {
+//             tw_speak(global.a11y_last_text, 1);
+//         }
+//     }
+//     // F2 = announce game status
+//     if (keyboard_check_pressed(vk_f2)) {
+//         var _status = ""[BUILD STATUS STRING FROM GAME STATE]"";
+//         tw_speak(_status, 1);
+//     }
+// }
+// ");
+
+// ============================================================
+// APPLY ALL CHANGES
+// ============================================================
+//
+// Import() compiles all queued GML changes and writes them into data.win.
+// This is the final step — nothing is modified until this call.
+
+ScriptMessage("Applying all changes...");
+importGroup.Import();
+
+ScriptMessage("Accessibility patch applied successfully!");

@@ -304,6 +304,78 @@ For beginners: Different games use different "engines" (the underlying technolog
 
 ---
 
+##### GameMaker Engine
+
+**This section is based on proven accessibility modding experience. Every pattern described here has been tested in a real project.**
+
+**How to identify:** `data.win` file in the game directory, `audiogroup` files, `options.ini` with GameMaker-specific settings.
+
+**What exists:**
+- **UndertaleModTool (UTMT)** is the primary tool for GameMaker modding. It can load, inspect, and modify `data.win` files. Available as both a GUI application and a CLI tool (`UTMT_CLI.exe`).
+- UTMT runs .csx (C# Roslyn) scripts that modify the game data — registering DLL extensions, appending GML code to object events, and replacing code strings.
+- **No mod loader needed.** Changes are baked directly into `data.win`. The patched game runs like the original.
+- Screen reader output via Tolk requires a **TolkWrapper DLL** because GameMaker passes `char*` (UTF-8) to DLL functions but Tolk expects `wchar_t*` (UTF-16). See `docs/gamemaker-modding-guide.md` section 3 for details.
+
+**Analysis tools:**
+- UTMT's built-in export scripts (`ExportAllCode.csx`, `ExportAllStrings.csx`) dump all GML code and strings to text files — fully accessible via CLI.
+- Exported GML code is readable and searchable, similar to decompiled C# from Unity games.
+
+**Accessibility barriers for blind modders:**
+- UTMT GUI is not fully accessible with a screen reader, but the CLI is fully usable.
+- All analysis can be done via exported text files and CLI tools.
+
+**Realistic assessment:**
+- **Feasible and proven.** GameMaker VM-mode games are fully moddable with UTMT. The workflow is well-documented in this template.
+- **Not feasible if:** The game is compiled with YYC (native C++) — no `data.win` file exists and UTMT cannot work with it.
+- **Our template IS directly applicable.** GameMaker-specific templates, guides, and scripts are provided in `templates/gamemaker/` and `docs/gamemaker-modding-guide.md`.
+
+**GameMaker setup steps (replaces Steps 5-7 for Unity):**
+
+1. **Install UndertaleModTool CLI:**
+   ```
+   winget install UndertaleMod.UndertaleModTool
+   ```
+
+2. **Back up data.win:**
+   ```powershell
+   copy "$GamePath\data.win" "$GamePath\data.win.backup"
+   ```
+
+3. **Export GML code for analysis:**
+   ```
+   UTMT_CLI.exe load data.win -s "Scripts/Resource Exporters/ExportAllCode.csx"
+   ```
+
+4. **Export strings for text analysis:**
+   ```
+   UTMT_CLI.exe load data.win -s "Scripts/Resource Exporters/ExportAllStrings.csx"
+   ```
+
+5. **Check game architecture** (for TolkWrapper compilation):
+   - Look at `options.ini` in the game directory for `Usex64=True/False`
+   - Or check if the .exe is PE32 (32-bit) or PE32+ (64-bit)
+
+6. **Install Zig** (for compiling TolkWrapper):
+   ```
+   winget install zig.zig
+   ```
+
+7. **Compile TolkWrapper.dll** from `templates/gamemaker/TolkWrapper.c.template`:
+   ```
+   zig cc -target x86-windows -shared -o TolkWrapper.dll TolkWrapper.c
+   ```
+   (Use `x86_64-windows` for 64-bit games)
+
+8. **Copy DLLs to game directory:** TolkWrapper.dll, Tolk.dll, nvdaControllerClient DLL
+
+9. **Set up project directory** using templates from `templates/gamemaker/`
+
+10. **Continue with Phase 1 analysis** using the exported GML code
+
+See `docs/gamemaker-modding-guide.md` for the comprehensive guide.
+
+---
+
 ##### .NET Games (XNA, MonoGame, FNA, other .NET frameworks)
 
 **How to identify:** Game DLLs can be opened with dnSpy/ILSpy and show readable C# code. Look for `MonoGame.Framework.dll`, `FNA.dll`, `Microsoft.Xna.Framework.dll`, or other .NET assemblies in the game directory.
