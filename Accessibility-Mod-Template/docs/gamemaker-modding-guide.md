@@ -38,10 +38,10 @@ The primary tool for GameMaker modding. Available in two forms:
 
 ```
 # Via winget (recommended)
-winget install UndertaleMod.UndertaleModTool
+winget install krzys-h.UndertaleModTool
 
 # Or download from GitHub releases:
-# https://github.com/UndertaleMod/UndertaleModTool/releases
+# https://github.com/UnderminersTeam/UndertaleModTool/releases
 ```
 
 **CLI usage:**
@@ -614,5 +614,5 @@ When the game updates, the developer ships a new data.win. Your patch must be re
 - `templates/gamemaker/project_status.md.template` — Project tracking template
 - `docs/known-issues.md` — Known issues including GameMaker + UTMT section
 - `docs/distribution-guide.md` — Packaging and publishing (includes GameMaker section)
-- UndertaleModTool: https://github.com/UndertaleMod/UndertaleModTool
+- UndertaleModTool: https://github.com/UnderminersTeam/UndertaleModTool
 - Tolk: https://github.com/ndarilek/tolk
