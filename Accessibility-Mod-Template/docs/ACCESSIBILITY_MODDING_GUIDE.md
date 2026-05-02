@@ -4,13 +4,14 @@ A guide for creating game accessibility mods that enable blind players to play u
 
 ## Core Accessibility Goals
 
-### Core Principle: Playability, Not Simplification
+### Core Principle: Work WITH the Game, Not Against It
 
 **The goal is to make the game playable for blind players in the same way sighted players experience it.** Accessibility means equal access to the gameplay - not a simplified version.
 
-- **No cheats without asking:** Only suggest cheats or simplifications when there is absolutely no other way to make a game mechanic accessible.
-- **Never add automatically:** Never implement cheats or shortcuts without explicitly asking first.
-- **Full game experience:** All game mechanics, challenges, and decisions should be preserved.
+- **Use existing game mechanics:** Always prefer the game's own menus, navigation, HUD, and controls over building custom replacements. Hook into game events rather than reimplementing logic.
+- **Only build custom when necessary:** Create custom UI or mechanics only when the game provides no usable equivalent (e.g., a purely visual mini-game with no text data to read).
+- **No cheats without asking:** Only suggest cheats or simplifications when there is absolutely no other way to make a game mechanic accessible. Never implement them without explicitly asking first.
+- **Full game experience:** All game mechanics, challenges, and decisions should be preserved. Blind players should experience the real game, not a parallel system.
 
 ### Technical Goals
 
