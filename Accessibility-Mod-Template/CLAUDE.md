@@ -8,6 +8,20 @@ User:
 - Uncertainties: ask briefly, then act
 - Output: NO `|` tables, use lists
 
+# Rigor First — overrides every other tradeoff
+
+Accessibility mods sit on top of foreign, undocumented code, and the user is blind. They cannot visually verify a fix — silence from the mod is indistinguishable from "working, nothing to say". The normal sight-driven feedback loop that catches sloppy assumptions does not exist here.
+
+- **No quick wins, no shortcuts.** A "fast" path that skips verification just moves the cost to the user.
+- **No hypotheses asserted as fact.** Marked speculation is fine; unmarked guesses are not.
+- **Verify against source.** Claims about game classes/methods/fields/behavior are grounded in `decompiled/` or `docs/game-api.md`. No source → no claim.
+- **Debug to root cause.** When surprised, read and reproduce before theorizing. No "let's try X and see."
+- **Read for WHY, not just THAT.** Adjacent assumptions break adjacent features.
+- **Trust the code over intuition.** When they disagree, correct the memory, not the code.
+- **Stuck → stop and report.** Three failed attempts: explain what you tried, ask the user. Don't escalate into workarounds.
+
+`Fact Discipline` and `Workaround Discipline` below are concrete applications. If anything else suggests a shortcut, this rule wins.
+
 # Project Start
 
 **New project / greeting / "hallo"** → read `docs/setup-guide.md`, run setup interview. Use `winget` and CLI tools for installations where possible.
@@ -42,22 +56,19 @@ When setting up Tolk for a mod project, ALWAYS copy BOTH DLLs to the game direct
 
 # Coding Principles
 
-- **Playability** — work WITH game mechanics (menus, navigation, controls), not against them. Only build custom UI/mechanics when the game has no usable equivalent. Cheats only if unavoidable
-- **Modular** — separate input, UI, announcements, game state
-- **Maintainable** — consistent patterns, extensible
-- **Efficient** — cache object *references* (not values), skip unnecessary work. Always read live data — never silently show stale cached values
-- **Robust** — utility classes, edge cases, announce state changes
-- **Respect game controls** — never override game keys, handle rapid presses
-- **Submission-quality** — clean enough for dev integration, consistent formatting, meaningful names
+- **Playability** — work WITH game mechanics (menus, navigation, controls), not against them. Only build custom UI/mechanics when the game has no usable equivalent. Cheats only if unavoidable. Goal is feature parity with a sighted player: same information, same reach, same uncertainty. Fog of war, undiscovered areas, missing tooltips, in-game lies are game logic — leave them hidden.
+- **Read, never recompute.** If the game already calculates it, read the field. Reimplementing the formula drifts on patches and duplicates game logic in the mod.
+- **Layer separation** — input, UI, announcements, game state in separate classes.
+- **Cache references, never values.** Cached values become stale announcements — the screen reader reads yesterday's HP.
+- **Respect game controls** — never override game keys, handle rapid presses.
+- **Submission-quality** — write as if the original game devs will read it before merging.
 
 Patterns: `docs/ACCESSIBILITY_MODDING_GUIDE.md`
 
 # Fact Discipline (game-touching code/claims only)
 
-- Every claim about game classes, methods, fields, or behavior MUST cite a source: a `file:line` in `decompiled/` or an entry in `docs/game-api.md`. No source → no claim.
 - Decompiled search empty or ambiguous → STOP, tell user, ask. Do NOT fill the gap with plausible assumptions.
-- Applies mid-debugging too: when behavior surprises you, verify against decompiled BEFORE forming a theory.
-- Marked speculation ("could be X, would need to verify") is fine. Unmarked guesses asserted as fact are not.
+- When source is silent on runtime behavior (timing, dynamic state, what the engine does between hooks), build a debug-gated audit probe and capture real logs — do not guess.
 - Internal mod-only code (logging, config, helpers, build scripts) does not require decompiled citations — normal engineering applies.
 
 # Workaround Discipline
@@ -75,14 +86,12 @@ A workaround without all four steps is a bug.
 
 - Null-safety with logging: never silent. Log via DebugLogger AND announce via ScreenReader.
 - Try-catch ONLY for Reflection + external calls (Tolk, changing game APIs). Normal code: null-checks.
-- DebugLogger: always available, active only in debug mode (F12). Zero overhead otherwise.
 
 # Before Implementation
 
 1. **GATE CHECK:** Tier 1 analysis must be complete (see project_status.md checkboxes). If game key bindings are not documented in game-api.md, STOP and do that first!
 2. Check `docs/game-api.md` for keys, methods, patterns
 3. Only use safe mod keys (game-api.md → "Safe Mod Keys")
-4. Files >500 lines: targeted search first, don't auto-read fully
 
 # Critical Warnings
 [FILL IN DURING DEVELOPMENT — document project-specific traps here]
@@ -92,7 +101,6 @@ A workaround without all four steps is a bug.
 - Feature done or ~30+ messages or ~70%+ context → suggest new conversation. Always update `project_status.md` before ending.
 - Check `docs/game-api.md` first before reading decompiled code.
 - After new code analysis → document in `docs/game-api.md` immediately
-- Problem persists after 3 attempts → stop, explain, suggest alternatives, ask user
 
 # References
 

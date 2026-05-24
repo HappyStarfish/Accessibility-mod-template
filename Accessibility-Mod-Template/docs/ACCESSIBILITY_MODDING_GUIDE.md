@@ -33,8 +33,8 @@ A guide for creating game accessibility mods that enable blind players to play u
 - Output plain text optimized for screen readers
 - Keep announcements concise but informative
 - Provide detailed information in navigable blocks (arrow key navigation)
-- Allow users to repeat the last announcement (e.g., Ctrl+R)
 - Announce automatically on important events, but avoid spam
+- Do NOT add a "repeat last announcement" hotkey. Screen readers already provide this natively (NVDA/JAWS/Narrator have their own review/repeat commands). A mod-side hotkey duplicates functionality and risks colliding with game or SR keys.
 
 ### Announcement Patterns
 
@@ -42,9 +42,10 @@ Use consistent formats for different announcement types:
 
 **Menu/List Navigation:**
 ```
-[MenuName], [Position] of [Total]: [ElementName]
-Example: "Inventory, 3 of 12: Health Potion"
+[ElementName] (optional: [State/Value])
+Example: "Health Potion, 12 in stock"
 ```
+Do NOT prepend "X of Y" position counters ("2 of 5", "3 of 12"). For native accessible controls the screen reader announces position automatically; for custom UI it's noise the user doesn't need on every focus change. Speak position only on explicit request (e.g. a "where am I" key) or when the list has no other ordering cue.
 
 **Status Changes:**
 ```
@@ -468,7 +469,7 @@ shop.SellItem(item); // Triggers sound, updates UI, logs transaction
 
 1. **Null-safety with logging:** Never fail silently. If something is null, log via DebugLogger AND tell the user something useful via ScreenReader.
 2. **Try-catch ONLY where failures are expected:** Reflection access (field names may change between game updates), Tolk/external library calls, and game API calls that may behave unexpectedly. Normal code paths use null-checks, not try-catch.
-3. **DebugLogger always, MelonLogger for critical:** Use `DebugLogger.Log()` for diagnostic info (only active in debug mode). Use `MelonLogger.Warning/Error()` for problems that persist outside debug mode (DLL not found, initialization failure).
+3. **DebugLogger always, MelonLogger for critical:** Use `DebugLogger.Log()` for diagnostic info (only active in debug mode, toggled by F12 — zero overhead when off, so it can stay in shipped code). Use `MelonLogger.Warning/Error()` for problems that persist outside debug mode (DLL not found, initialization failure).
 
 ### Defensive Programming
 
@@ -637,7 +638,7 @@ if (Input.GetKey(KeyCode.LeftShift)) { }  // Held down
 ## Quick Reference: Best Practices
 
 1. **Only announce on changes** - Not every frame
-2. **Always include position** - "X of Y" for lists
+2. **No "X of Y" position counters** - The screen reader handles position for real list controls; for custom UI it's noise on every focus change
 3. **Explicit empty states** - Never silence
 4. **Confirm actions** - What was done + new state
 5. **Announce available commands** - Key hints when panel opens

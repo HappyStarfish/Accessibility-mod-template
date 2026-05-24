@@ -718,15 +718,15 @@ If neither WinGet nor dotnet tool is available, manual download: https://github.
 
 For beginners: Games are written in a programming language and then "compiled" (translated into machine code). Decompiling reverses this - we get readable code. We need this to understand how the game works and where to hook in our accessibility features.
 
-### Step 7b: Tutorial Text Extraction (if user is not familiar with the game)
+### Step 7b: Tutorial, Tooltip & Help Text Extraction (if user is not familiar with the game)
 
 If the user indicated in Step 2b that they don't know the game well ("Somewhat" or "Not at all"):
 
-**Offer:** "I can search the decompiled code and game files for tutorial texts, help texts, and gameplay instructions. I'll write them to a file so you can read through the game mechanics before or while we start modding. Should I do that?"
+**Offer:** "I can search the decompiled code and game files for tutorial texts, tooltips, hints, info-texts, and gameplay instructions. I'll write them to a file so you can read through the game mechanics before or while we start modding. Should I do that?"
 
 **If yes:**
 
-1. **Search decompiled code for tutorial/help text:**
+1. **Search decompiled code for tutorial/help/tooltip text:**
    ```
    Grep pattern: Tutorial
    Grep pattern: [Hh]elp[Tt]ext
@@ -735,6 +735,9 @@ If the user indicated in Step 2b that they don't know the game well ("Somewhat" 
    Grep pattern: [Tt]ip[Ss]
    Grep pattern: [Hh]int
    Grep pattern: [Gg]uide
+   Grep pattern: [Tt]ooltip
+   Grep pattern: [Dd]escription
+   Grep pattern: [Ii]nfo[Tt]ext
    ```
 
 2. **Search for localization/resource files:**
@@ -1314,13 +1317,15 @@ After analysis, `docs/game-api.md` should contain:
 **Why detailed UI documentation matters:**
 Every menu feature will need to read text from UI elements. If you document the access pattern once, you (and Claude Code) can reuse it everywhere without re-analyzing each time.
 
-#### 1.10 Search and Analyze Tutorial (Tier 3 - When planning tutorial accessibility)
+#### 1.10 Search and Analyze Tutorial, Tooltips & In-Game Texts (Tier 3 - When planning text-content accessibility)
 
-**Why the tutorial is important:**
+**Why these in-game texts matter:**
 - Tutorials explain game mechanics step by step - ideal for understanding what needs to be made accessible
+- Tooltips, hints, and info-texts carry the rules, options, and edge cases sighted players read on hover/dwell — a blind player without them is missing first-class game information, not a "nice to have"
 - Often simpler structure than the rest of the game - good entry point for mod development
 - If the tutorial is accessible, blind players can actually learn the game in the first place
-- Tutorial code often reveals which UI elements and interactions exist
+- Tutorial/tooltip code reveals which UI elements and interactions exist
+- **Diagnostic value:** an enumerable list of tooltips/hints in the code is a coverage map — every tooltip the mod does NOT yet expose is a known gap. Use this list to drive feature priorities.
 
 **Search in decompiled code:**
 ```
@@ -1330,23 +1335,31 @@ Grep pattern: FirstTime
 Grep pattern: Introduction
 Grep pattern: HowToPlay
 Grep pattern: Onboarding
+Grep pattern: [Tt]ooltip
+Grep pattern: [Hh]int
+Grep pattern: [Dd]escription
+Grep pattern: [Ii]nfo[Tt]ext
+Grep pattern: [Hh]over[Tt]ext
 ```
 
 **Search in game directory:**
-- For files with "tutorial", "intro", "howto" in name
-- Often organized in separate scenes or levels
+- For files with "tutorial", "intro", "howto", "tooltip", "hint" in name
+- Often organized in separate scenes or levels; tooltip text often lives in localization resources
 
 **Analysis questions:**
 1. Is there a tutorial? If yes, how is it started?
 2. Which game mechanics are introduced in the tutorial?
 3. How are instructions displayed (text, popups, voice output)?
-4. Are there interactive elements that need to be made accessible?
-5. Can the tutorial be skipped?
+4. Where do tooltips/hints come from — static strings, localization keys, dynamic generation from game state?
+5. What triggers a tooltip in the sighted UX (hover, focus, long-press) — and how do we map that to a blind-friendly trigger (focus, dedicated key)?
+6. Are there interactive elements that need to be made accessible?
+7. Can the tutorial be skipped?
 
 **Result:**
 - Document tutorial existence and start method in game-api.md
-- Put tutorial on feature list (typically high priority)
-- Use recognized mechanics as basis for further features
+- Document tooltip/hint mechanism (source, trigger, language pipeline) in game-api.md
+- Put tutorial, tooltips, and hints on the feature list (typically high priority — they ARE the game's explanation of itself)
+- Use the enumerated tooltip/hint list as a coverage checklist as features land
 
 ### Phase 1.5: Create Feature Plan
 
